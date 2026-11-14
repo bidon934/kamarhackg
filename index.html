@@ -2101,7 +2101,7 @@ async function launchMLBB(){
   
   // Deep link fallback (dicoba kalau semua intent gagal)
   const DEEP_LINKS = [
-    'https://play.mobilelegends.com',
+    'https://applink.mobilelegends.com',
     'https://applink.mobilelegends.com'
   ];
   
@@ -2149,8 +2149,8 @@ async function launchMLBB(){
   
   // ---- Tahap 2: Coba deep link play.mobilelegends.com ----
   if(!launched && !document.hidden){
-    console.log('[MLBB] Trying deep link: play.mobilelegends.com');
-    toast('Membuka play.mobilelegends.com...');
+    console.log('[MLBB] Trying deep link: applink.mobilelegends.com');
+    toast('Membuka applink.mobilelegends.com...');
     
     try { window.location.href = DEEP_LINKS[0]; } catch(e){}
     
@@ -2158,7 +2158,7 @@ async function launchMLBB(){
     
     if(launched || document.hidden){
       cleanup();
-      toast('MLBB terbuka via play.mobilelegends.com');
+      toast('MLBB terbuka via applink.mobilelegends.com');
       return;
     }
   }
