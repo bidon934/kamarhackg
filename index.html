@@ -2008,7 +2008,7 @@ APPS.hackmod = {
           </div>
           <div class="hm-target" style="margin-top:4px">
             <span style="font-size:9.5px;color:#7dffd0">
-              ⓘ Klik LAUNCH manual — fallback: play.mobilelegends.com → applink.mobilelegends.com
+              ⓘ Klik LAUNCH manual — membuka applink.mobilelegends.com
             </span>
           </div>
         </div>
@@ -2078,34 +2078,20 @@ APPS.hackmod = {
   }
 };
 
-/* ============ MLBB LAUNCH (DUAL DEEP LINK FALLBACK) ============ */
-async function launchMLBB(){
+/* ============ MLBB LAUNCH — LANGSUNG APPLINK ============ */
+function launchMLBB(){
   const ua = navigator.userAgent;
   const isAndroid = /Android/i.test(ua);
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
   
+  // Non-Android / iOS → langsung simulasi
   if(!isAndroid){
-    toast(isIOS ? 'iOS tidak support intent — menjalankan simulasi' : 'Desktop — menjalankan simulasi MLBB');
+    toast(isIOS ? 'iOS tidak support — menjalankan simulasi' : 'Desktop — menjalankan simulasi MLBB');
     launchMiniGame();
     return;
   }
   
-  // Varian package MLBB (coba berurutan)
-  const PACKAGES = [
-    'com.mobile.legends',        // Global
-    'com.mobile.legends.id',     // Indonesia
-    'com.mobilelegends.id',      // Indonesia (alt)
-    'com.vng.mlbbvn',            // Vietnam
-    'com.mobilelegends.mi'       // MIUI / China
-  ];
-  
-  // Deep link fallback (dicoba kalau semua intent gagal)
-  const DEEP_LINKS = [
-    'https://applink.mobilelegends.com',
-    'https://applink.mobilelegends.com'
-  ];
-  
-  toast('Mendeteksi MLBB...');
+  toast('Membuka MLBB via applink...');
   
   // Deteksi app benar-benar terbuka
   let launched = false;
@@ -2114,75 +2100,22 @@ async function launchMLBB(){
   document.addEventListener('visibilitychange', onVis);
   window.addEventListener('blur', onBlur);
   
-  const cleanup = () => {
+  // Langsung ke applink.mobilelegends.com
+  try {
+    window.location.href = 'https://applink.mobilelegends.com';
+  } catch(e){
+    console.error('[MLBB] applink error:', e);
+  }
+  
+  // Fallback kalau 2 detik app belum buka → mini-game simulasi
+  setTimeout(() => {
     document.removeEventListener('visibilitychange', onVis);
     window.removeEventListener('blur', onBlur);
-  };
-  
-  // ---- Tahap 1: Coba intent package MLBB ----
-  for(let i = 0; i < PACKAGES.length; i++){
-    if(launched || document.hidden){ cleanup(); return; }
-    const pkg = PACKAGES[i];
-    console.log(`[MLBB] Trying package: ${pkg}`);
-    toast(`Mencoba: ${pkg}...`);
-    
-    const intentUrl = 
-      'intent:#Intent;' +
-      `package=${pkg};` +
-      'action=android.intent.action.MAIN;' +
-      'category=android.intent.category.LAUNCHER;' +
-      'launchFlags=0x10000000;' +
-      'S.browser_fallback_url=' + encodeURIComponent('https://play.mobilelegends.com/') +
-      ';end';
-    
-    try { window.location.href = intentUrl; } catch(e){}
-    
-    // Tunggu 700ms — kalau app kebuka, halaman jadi hidden/blur
-    await sleep(700);
-    
-    if(launched || document.hidden){
-      cleanup();
-      toast('MLBB terbuka! (' + pkg + ')');
-      return;
+    if(!launched && !document.hidden){
+      toast('App tidak terdeteksi — menjalankan simulasi');
+      launchMiniGame();
     }
-  }
-  
-  // ---- Tahap 2: Coba deep link play.mobilelegends.com ----
-  if(!launched && !document.hidden){
-    console.log('[MLBB] Trying deep link: applink.mobilelegends.com');
-    toast('Membuka applink.mobilelegends.com...');
-    
-    try { window.location.href = DEEP_LINKS[0]; } catch(e){}
-    
-    await sleep(1000);
-    
-    if(launched || document.hidden){
-      cleanup();
-      toast('MLBB terbuka via applink.mobilelegends.com');
-      return;
-    }
-  }
-  
-  // ---- Tahap 3: Coba deep link applink.mobilelegends.com ----
-  if(!launched && !document.hidden){
-    console.log('[MLBB] Trying deep link: applink.mobilelegends.com');
-    toast('Membuka applink.mobilelegends.com...');
-    
-    try { window.location.href = DEEP_LINKS[1]; } catch(e){}
-    
-    await sleep(1000);
-    
-    if(launched || document.hidden){
-      cleanup();
-      toast('MLBB terbuka via applink.mobilelegends.com');
-      return;
-    }
-  }
-  
-  // ---- Tahap 4: Semua gagal → mini-game simulasi ----
-  cleanup();
-  toast('MLBB tidak terdeteksi — menjalankan simulasi');
-  launchMiniGame();
+  }, 2000);
 }
 
 /* Mini MLBB game */
