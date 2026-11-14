@@ -384,7 +384,8 @@ left:2px;top:2px;background:#7dffd0;border-radius:50%;transition:.2s}
 #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);z-index:80;
 background:rgba(3,14,11,.95);border:1px solid rgba(0,255,156,.45);color:#baffea;
 padding:10px 20px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;
-pointer-events:none;transition:.25s;white-space:nowrap}
+pointer-events:none;transition:.25s;white-space:nowrap;max-width:90vw;
+overflow:hidden;text-overflow:ellipsis}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:640px){
 .tag{font-size:9.5px}.hbtn{padding:6px 8px;font-size:9.5px}
@@ -479,7 +480,7 @@ function updateTweens(dt){
 let toastTimer;
 function toast(msg){
   const el=$('toast'); el.textContent=msg; el.classList.add('show');
-  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2100);
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2400);
 }
 
 /* ============ SVG ICONS ============ */
@@ -760,7 +761,6 @@ const screenMat = new THREE.MeshBasicMaterial({map:screenTex});
 }
 interactive.push(desk);
 
-/* CHAIR - fixed orientation */
 const chair = new THREE.Group();
 chair.position.set(1.2,0,-1.42);
 chair.rotation.y = Math.PI;
@@ -1992,7 +1992,7 @@ APPS.settings = {
   }
 };
 
-/* ============ HACK MOD (FIXED LAUNCH) ============ */
+/* ============ HACK MOD ============ */
 let mlbbUnlocked = false;
 APPS.hackmod = {
   title:'MLBB Hack Mod v3.7', icon:'hackmod',
@@ -2008,7 +2008,7 @@ APPS.hackmod = {
           </div>
           <div class="hm-target" style="margin-top:4px">
             <span style="font-size:9.5px;color:#7dffd0">
-              ⓘ Klik LAUNCH secara manual (bukan auto) — browser wajibkan user gesture untuk buka app lain
+              ⓘ Klik LAUNCH manual — fallback: play.mobilelegends.com → applink.mobilelegends.com
             </span>
           </div>
         </div>
@@ -2068,65 +2068,121 @@ APPS.hackmod = {
         prog.style.width = pct+'%';
         await sleep(400 + Math.random()*350);
       }
-      toast('Cheat berhasil di-inject! Klik LAUNCH MLBB untuk buka game');
+      toast('Cheat berhasil di-inject! Klik LAUNCH MLBB');
       btn.textContent = 'INJECT AGAIN'; btn.disabled = false;
       $('btnLaunch').classList.add('show');
       $('btnLaunch').textContent = 'LAUNCH MLBB →';
       mlbbUnlocked = true;
-      /* buildDesktopIcons() to update lock state */
       if(typeof buildDesktopIcons === 'function') buildDesktopIcons();
-      // JANGAN auto-launch — harus manual agar user gesture valid
     }
   }
 };
 
-/* ============ MLBB LAUNCH (FIXED) ============ */
-function launchMLBB(){
+/* ============ MLBB LAUNCH (DUAL DEEP LINK FALLBACK) ============ */
+async function launchMLBB(){
   const ua = navigator.userAgent;
   const isAndroid = /Android/i.test(ua);
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
   
   if(!isAndroid){
-    toast(isIOS ? 'iOS tidak support intent Android — menjalankan simulasi' : 'Desktop mode — menjalankan simulasi MLBB');
+    toast(isIOS ? 'iOS tidak support intent — menjalankan simulasi' : 'Desktop — menjalankan simulasi MLBB');
     launchMiniGame();
     return;
   }
   
-  toast('Membuka com.mobile.legends...');
+  // Varian package MLBB (coba berurutan)
+  const PACKAGES = [
+    'com.mobile.legends',        // Global
+    'com.mobile.legends.id',     // Indonesia
+    'com.mobilelegends.id',      // Indonesia (alt)
+    'com.vng.mlbbvn',            // Vietnam
+    'com.mobilelegends.mi'       // MIUI / China
+  ];
   
-  // Deteksi app benar-benar terbuka (page hidden / blur)
+  // Deep link fallback (dicoba kalau semua intent gagal)
+  const DEEP_LINKS = [
+    'https://play.mobilelegends.com',
+    'https://applink.mobilelegends.com'
+  ];
+  
+  toast('Mendeteksi MLBB...');
+  
+  // Deteksi app benar-benar terbuka
   let launched = false;
   const onVis = () => { if(document.hidden) launched = true; };
   const onBlur = () => { launched = true; };
   document.addEventListener('visibilitychange', onVis);
   window.addEventListener('blur', onBlur);
   
-  // Intent lengkap + fallback URL eksplisit (bukan Play Store)
-  const intentUrl = 
-    'intent:#Intent;' +
-    'package=com.mobile.legends;' +
-    'action=android.intent.action.MAIN;' +
-    'category=android.intent.category.LAUNCHER;' +
-    'launchFlags=0x10000000;' +
-    'S.browser_fallback_url=' + encodeURIComponent('https://www.mobilelegends.com/') +
-    ';end';
-  
-  // PENTING: fire SYNCHRONOUS dari click handler
-  try {
-    window.location.href = intentUrl;
-  } catch(e){
-    console.error('Intent error:', e);
-  }
-  
-  // Fallback: kalau 2 detik app belum buka, jalankan mini game
-  setTimeout(() => {
+  const cleanup = () => {
     document.removeEventListener('visibilitychange', onVis);
     window.removeEventListener('blur', onBlur);
-    if(!launched && !document.hidden){
-      toast('App tidak terdeteksi — menjalankan simulasi');
-      launchMiniGame();
+  };
+  
+  // ---- Tahap 1: Coba intent package MLBB ----
+  for(let i = 0; i < PACKAGES.length; i++){
+    if(launched || document.hidden){ cleanup(); return; }
+    const pkg = PACKAGES[i];
+    console.log(`[MLBB] Trying package: ${pkg}`);
+    toast(`Mencoba: ${pkg}...`);
+    
+    const intentUrl = 
+      'intent:#Intent;' +
+      `package=${pkg};` +
+      'action=android.intent.action.MAIN;' +
+      'category=android.intent.category.LAUNCHER;' +
+      'launchFlags=0x10000000;' +
+      'S.browser_fallback_url=' + encodeURIComponent('https://play.mobilelegends.com/') +
+      ';end';
+    
+    try { window.location.href = intentUrl; } catch(e){}
+    
+    // Tunggu 700ms — kalau app kebuka, halaman jadi hidden/blur
+    await sleep(700);
+    
+    if(launched || document.hidden){
+      cleanup();
+      toast('MLBB terbuka! (' + pkg + ')');
+      return;
     }
-  }, 2000);
+  }
+  
+  // ---- Tahap 2: Coba deep link play.mobilelegends.com ----
+  if(!launched && !document.hidden){
+    console.log('[MLBB] Trying deep link: play.mobilelegends.com');
+    toast('Membuka play.mobilelegends.com...');
+    
+    try { window.location.href = DEEP_LINKS[0]; } catch(e){}
+    
+    await sleep(1000);
+    
+    if(launched || document.hidden){
+      cleanup();
+      toast('MLBB terbuka via play.mobilelegends.com');
+      return;
+    }
+  }
+  
+  // ---- Tahap 3: Coba deep link applink.mobilelegends.com ----
+  if(!launched && !document.hidden){
+    console.log('[MLBB] Trying deep link: applink.mobilelegends.com');
+    toast('Membuka applink.mobilelegends.com...');
+    
+    try { window.location.href = DEEP_LINKS[1]; } catch(e){}
+    
+    await sleep(1000);
+    
+    if(launched || document.hidden){
+      cleanup();
+      toast('MLBB terbuka via applink.mobilelegends.com');
+      return;
+    }
+  }
+  
+  // ---- Tahap 4: Semua gagal → mini-game simulasi ----
+  cleanup();
+  toast('MLBB tidak terdeteksi — menjalankan simulasi');
+  launchMiniGame();
 }
 
 /* Mini MLBB game */
