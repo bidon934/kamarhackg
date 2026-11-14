@@ -1,0 +1,2521 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>NULLSEC // ROOM 404</title>
+<style>
+:root{--grn:#00ff9c;--cyn:#00e5ff;--mag:#ff2bd6;--bg:#02050a;--warn:#ffd166;--err:#ff5a7a;
+--mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:#cfe9e0;
+font-family:var(--mono);font-size:13px}
+canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:20}
+.tag{position:absolute;top:12px;left:14px;font-size:11px;letter-spacing:2px;color:var(--grn);
+text-shadow:0 0 12px rgba(0,255,156,.8);font-weight:700;opacity:.9}
+.tag b{color:#fff}
+#hint{position:absolute;bottom:14px;left:14px;font-size:11px;color:#6a9f8f;letter-spacing:.5px}
+.hbtns{position:absolute;top:10px;right:12px;display:flex;gap:6px;pointer-events:auto}
+.hbtn{background:rgba(4,16,12,.8);border:1px solid rgba(0,255,156,.35);color:#8affd0;
+font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1px;padding:7px 11px;
+border-radius:6px;cursor:pointer;transition:.15s;backdrop-filter:blur(6px)}
+.hbtn:hover{background:rgba(0,255,156,.14);border-color:var(--grn);color:#fff}
+.hbtn:active{transform:scale(.95)}
+#boot{position:fixed;inset:0;z-index:100;background:#010409;display:flex;flex-direction:column;
+align-items:center;justify-content:center;transition:opacity .8s,transform .8s}
+#boot.gone{opacity:0;transform:scale(1.08);pointer-events:none}
+#bootLog{width:min(680px,88vw);height:174px;overflow:hidden;font-size:12px;line-height:1.75;
+color:#4dbf9a;z-index:1}
+.bl{opacity:0;animation:blIn .3s forwards}@keyframes blIn{to{opacity:1}}
+.bl.ok{color:var(--grn);text-shadow:0 0 14px rgba(0,255,156,.9)}
+#bootBarWrap{width:min(680px,88vw);margin-top:20px;z-index:1}
+#bootBar{height:7px;background:#04120e;border:1px solid #0b3d2e;border-radius:4px;overflow:hidden}
+#bootFill{height:100%;width:0%;background:linear-gradient(90deg,#00ff9c,#00d0ff);
+box-shadow:0 0 16px var(--grn);transition:width .25s linear}
+#bootPct{margin-top:12px;font-size:30px;font-weight:800;letter-spacing:3px;color:var(--grn);
+text-shadow:0 0 24px rgba(0,255,156,.9);text-align:center}
+#bootTitle{font-size:11px;letter-spacing:5px;color:#2e7a63;margin-bottom:16px;z-index:1}
+#os{position:fixed;inset:0;z-index:60;display:none;
+background:linear-gradient(135deg,#0a1420,#04121e 40%,#0a0f1a 70%,#12081a);overflow:hidden}
+#os.on{display:block;animation:osIn .55s ease}
+@keyframes osIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+#os::before{content:'';position:absolute;inset:0;pointer-events:none;
+background:radial-gradient(ellipse at 30% 20%,rgba(0,229,255,.12),transparent 55%),
+radial-gradient(ellipse at 75% 80%,rgba(255,43,214,.1),transparent 55%)}
+#osGrid{position:absolute;inset:0;pointer-events:none;opacity:.35;
+background-image:linear-gradient(rgba(0,229,255,.06) 1px,transparent 1px),
+linear-gradient(90deg,rgba(0,229,255,.06) 1px,transparent 1px);background-size:48px 48px}
+.os-top{position:absolute;top:0;left:0;right:0;height:34px;display:flex;align-items:center;
+padding:0 14px;gap:10px;background:rgba(3,10,16,.85);
+border-bottom:1px solid rgba(0,255,156,.22);z-index:5;font-size:11.5px;color:#7dffd0}
+.os-top .logo{color:var(--grn);font-weight:800;letter-spacing:2px;
+text-shadow:0 0 10px var(--grn);display:flex;align-items:center;gap:6px}
+.os-top .sp{flex:1}
+.os-top .stat{color:#4dbf9a;display:flex;gap:14px;font-size:10.5px}
+.os-top .stat span{color:#2e7a63}
+.os-top .clock{color:#baffea;font-weight:700;letter-spacing:1px}
+.os-top .power{background:rgba(255,60,90,.14);border:1px solid rgba(255,90,122,.5);
+color:#ff8fa6;font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:1px;
+padding:4px 10px;border-radius:4px;cursor:pointer;transition:.15s}
+.os-top .power:hover{background:rgba(255,60,90,.35);color:#fff}
+#icons{position:absolute;top:56px;left:20px;display:grid;
+grid-template-columns:repeat(auto-fill,96px);gap:14px 10px;z-index:2;
+max-width:calc(100vw - 40px);align-content:start}
+.dicon{width:96px;padding:10px 6px;background:rgba(4,16,20,.55);
+border:1px solid rgba(0,255,156,.12);border-radius:10px;cursor:pointer;text-align:center;
+transition:.15s;backdrop-filter:blur(4px);user-select:none}
+.dicon:hover{background:rgba(0,255,156,.14);border-color:rgba(0,255,156,.55);
+transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,255,156,.2)}
+.dicon:active{transform:scale(.96)}
+.dicon .ic-svg{display:block;width:34px;height:34px;margin:0 auto 8px;color:var(--grn);
+filter:drop-shadow(0 0 8px currentColor)}
+.dicon .ic-svg svg{width:100%;height:100%}
+.dicon .nm{font-size:10px;color:#baffea;font-weight:700;letter-spacing:.3px;
+line-height:1.25;word-break:break-word}
+.dicon.locked{opacity:.55}
+.dicon.locked .ic-svg{color:#7a5555;filter:grayscale(1) drop-shadow(0 0 6px rgba(255,90,122,.6))}
+.dicon.locked .nm{color:#7a5555}
+.dicon.glow{animation:iconGlow 1.6s infinite alternate}
+@keyframes iconGlow{
+0%{box-shadow:0 0 12px rgba(255,43,214,.4);border-color:rgba(255,43,214,.4)}
+100%{box-shadow:0 0 28px rgba(255,43,214,.9),0 0 60px rgba(255,43,214,.4);
+border-color:rgba(255,43,214,.9)}}
+#taskbar{position:absolute;left:0;right:0;bottom:0;height:44px;display:flex;align-items:center;
+gap:6px;padding:0 10px;background:rgba(3,10,16,.92);
+border-top:1px solid rgba(0,255,156,.28);z-index:10;backdrop-filter:blur(10px)}
+#taskbar .start{background:rgba(0,255,156,.16);border:1px solid rgba(0,255,156,.5);
+color:var(--grn);font-weight:800;font-size:11px;letter-spacing:1px;padding:7px 12px;
+border-radius:6px;cursor:pointer;transition:.15s;font-family:var(--mono);
+display:flex;align-items:center;gap:5px}
+#taskbar .start:hover{background:rgba(0,255,156,.32);color:#fff}
+#tasks{display:flex;gap:5px;flex:1;overflow:hidden}
+.task{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#a9c4bd;
+font-size:10.5px;font-weight:700;padding:6px 10px;border-radius:5px;cursor:pointer;
+transition:.15s;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis;
+font-family:var(--mono);display:flex;align-items:center;gap:5px}
+.task:hover{background:rgba(0,255,156,.14);color:#fff;border-color:rgba(0,255,156,.4)}
+.task.active{background:rgba(0,229,255,.25);border-color:var(--cyn);color:#fff;
+box-shadow:0 0 10px rgba(0,229,255,.4)}
+.task.minimized{opacity:.55;font-style:italic}
+#tbClock{color:#baffea;font-weight:700;font-size:12px;padding:0 8px;letter-spacing:.5px}
+.os-window{position:absolute;background:rgba(6,14,20,.97);
+border:1px solid rgba(0,229,255,.38);border-radius:8px;
+box-shadow:0 22px 70px rgba(0,0,0,.7),0 0 0 1px rgba(0,255,156,.08);
+display:flex;flex-direction:column;overflow:hidden;min-width:340px;min-height:220px;
+animation:winIn .28s ease;z-index:100}
+@keyframes winIn{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:none}}
+.win-title{height:34px;display:flex;align-items:center;padding:0 8px 0 12px;gap:8px;
+background:linear-gradient(180deg,rgba(0,229,255,.14),rgba(0,255,156,.06));
+border-bottom:1px solid rgba(0,229,255,.28);cursor:grab;user-select:none;flex:0 0 auto}
+.win-title.drag{cursor:grabbing}
+.win-title .ic{width:16px;height:16px;color:var(--grn);flex:0 0 auto;
+filter:drop-shadow(0 0 4px currentColor)}
+.win-title .ic svg{width:100%;height:100%}
+.win-title .tt{font-size:11.5px;font-weight:700;color:#d6fff2;letter-spacing:.4px;flex:1;
+overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.win-title .ctl{display:flex;gap:4px}
+.win-title .ctl button{background:transparent;border:none;color:#7dffd0;
+font-family:var(--mono);font-size:13px;width:22px;height:22px;border-radius:4px;
+cursor:pointer;line-height:1;padding:0}
+.win-title .ctl button:hover{background:rgba(255,255,255,.12)}
+.win-title .ctl .cls:hover{background:rgba(255,90,122,.35);color:#fff}
+.win-body{flex:1;overflow:auto;position:relative}
+.app-term{background:rgba(1,4,7,.98);padding:12px 14px;height:100%;font-size:12px;
+line-height:1.75;color:#8affd0;white-space:pre-wrap;overflow:auto;scrollbar-width:thin}
+.hl.cmd{color:#e9fff7;font-weight:700}.hl.dim{color:#3f7a68}
+.hl.out{color:#6fe8bd}.hl.ok{color:#00ff9c;text-shadow:0 0 12px rgba(0,255,156,.7)}
+.hl.warn{color:#ffd166}.hl.err{color:#ff5a7a}
+.hl.big{color:#fff;font-weight:800;letter-spacing:1px}
+.app-sys{padding:16px;display:flex;flex-direction:column;gap:14px;height:100%}
+.sysbar{display:flex;flex-direction:column;gap:6px}
+.sysbar .lbl{display:flex;justify-content:space-between;font-size:11.5px;color:#7dffd0;font-weight:700}
+.sysbar .lbl span{color:#00ff9c}
+.sysbar .track{height:14px;background:rgba(0,255,156,.08);border:1px solid rgba(0,255,156,.15);
+border-radius:4px;overflow:hidden}
+.sysbar .fill{height:100%;transition:width .2s,background .2s}
+#sysCanvas{width:100%;height:auto;background:rgba(0,0,0,.35);
+border:1px solid rgba(0,255,156,.15);border-radius:6px}
+.app-radar{display:flex;flex-direction:column;align-items:center;height:100%;padding:12px;gap:10px}
+#radarCanvas{border-radius:8px;background:radial-gradient(circle,#031514,#01080a 70%);
+border:1px solid rgba(0,255,156,.3)}
+.radar-info{font-size:11px;color:#4dbf9a;display:flex;gap:18px;justify-content:center}
+.radar-info b{color:var(--grn)}
+.app-code{height:100%;overflow:hidden;position:relative;background:#03080e;padding:10px 14px;
+font-size:12px;line-height:1.65;font-family:var(--mono)}
+.app-code pre{margin:0;white-space:pre;color:#8affd0}
+.kw{color:#ff2bd6;font-weight:700}.def{color:#00e5ff;font-weight:700}
+.str{color:#ffd166}.dim2{color:#3f7a68}
+.ln{color:#2e7a63;user-select:none;display:inline-block;width:22px;text-align:right;margin-right:10px}
+.cursor{display:inline-block;width:8px;height:14px;background:var(--grn);
+animation:blinkCur .7s infinite;vertical-align:middle}
+@keyframes blinkCur{50%{opacity:0}}
+.app-cipher{height:100%;display:flex;flex-direction:column;padding:16px;gap:14px;
+background:radial-gradient(ellipse at top,rgba(0,255,156,.08),transparent 60%)}
+#cipherGrid{flex:1;display:grid;grid-template-columns:repeat(26,1fr);gap:0;font-size:10px;
+color:rgba(0,255,156,.25);overflow:hidden;font-family:var(--mono);line-height:1.5}
+.cipher-out{font-size:14px;font-weight:800;color:var(--grn);letter-spacing:1.5px;
+text-shadow:0 0 14px var(--grn);min-height:22px;padding:6px 0;
+border-top:1px solid rgba(0,255,156,.2)}
+.cipher-out .blind{color:#2e7a63}
+.cipher-status{font-size:10.5px;color:#4dbf9a;display:flex;gap:14px;flex-wrap:wrap}
+.app-cam{height:100%;display:flex;flex-direction:column;background:#000;position:relative;overflow:hidden}
+.app-cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.cam-overlay{position:absolute;inset:0;pointer-events:none;
+background:repeating-linear-gradient(0deg,rgba(0,255,156,.06) 0 1px,transparent 1px 3px),
+radial-gradient(ellipse,transparent 40%,rgba(0,0,0,.55));
+box-shadow:inset 0 0 90px rgba(0,255,156,.28)}
+.cam-info{position:absolute;top:10px;left:12px;font-size:11px;color:var(--grn);
+text-shadow:0 0 8px var(--grn);font-weight:700}
+.cam-rec{position:absolute;top:10px;right:12px;font-size:11px;color:#ff5a7a;
+font-weight:700;display:flex;align-items:center;gap:6px}
+.cam-rec::before{content:'';width:8px;height:8px;border-radius:50%;background:#ff5a7a;
+animation:blinkCur 1s infinite}
+.cam-time{position:absolute;bottom:10px;left:12px;font-size:11px;color:var(--grn);
+font-weight:700}
+.cam-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+justify-content:center;color:#3f7a68;font-size:12px;text-align:center;padding:20px;gap:12px}
+.cam-fallback .big{font-size:44px;opacity:.5}
+.cam-fallback button{margin-top:10px;background:rgba(0,255,156,.15);
+border:1px solid rgba(0,255,156,.5);color:var(--grn);font-family:var(--mono);font-size:11px;
+font-weight:800;padding:8px 16px;border-radius:6px;cursor:pointer;letter-spacing:1px}
+.app-chat{display:flex;flex-direction:column;height:100%;background:#03080e}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:80%;padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.5;
+animation:msgIn .3s}
+@keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.msg.me{align-self:flex-end;background:rgba(0,229,255,.18);border:1px solid rgba(0,229,255,.4);
+color:#a5f0ff;border-bottom-right-radius:3px}
+.msg.them{align-self:flex-start;background:rgba(255,43,214,.12);
+border:1px solid rgba(255,43,214,.35);color:#ffb0f0;border-bottom-left-radius:3px}
+.msg .who{font-size:10px;opacity:.65;margin-bottom:3px;font-weight:800;letter-spacing:.5px}
+.msg.typing{color:#7dffd0;font-style:italic;background:rgba(0,255,156,.08)}
+.chat-input{display:flex;gap:6px;padding:8px 10px;border-top:1px solid rgba(0,255,156,.2);
+background:rgba(3,10,16,.9)}
+.chat-input input{flex:1;background:rgba(0,255,156,.06);
+border:1px solid rgba(0,255,156,.28);color:#d6fff2;font-family:var(--mono);font-size:12px;
+padding:8px 12px;border-radius:6px;outline:none}
+.chat-input button{background:rgba(0,255,156,.2);border:1px solid var(--grn);color:var(--grn);
+font-weight:800;font-size:11px;padding:8px 14px;border-radius:6px;cursor:pointer;letter-spacing:1px}
+.app-hack{display:grid;grid-template-columns:1fr;grid-template-rows:auto 1fr auto;height:100%;
+background:linear-gradient(180deg,rgba(30,10,20,.5),rgba(3,8,14,.95));overflow:hidden}
+.hm-header{padding:12px 18px;border-bottom:1px solid rgba(255,43,214,.3);
+background:linear-gradient(90deg,rgba(255,43,214,.15),rgba(0,229,255,.08))}
+.hm-header .tt{font-size:16px;font-weight:900;letter-spacing:2px;color:#fff;
+text-shadow:0 0 16px rgba(255,43,214,.9)}
+.hm-header .sub{font-size:10px;color:#ff8fa6;letter-spacing:2px;margin-top:3px}
+.hm-target{margin-top:6px;font-size:10.5px;color:#a5a0c0;display:flex;gap:14px;
+align-items:center;flex-wrap:wrap}
+.hm-target .badge{background:rgba(0,255,156,.15);border:1px solid rgba(0,255,156,.4);
+color:#00ff9c;padding:2px 8px;border-radius:10px;font-size:9.5px;letter-spacing:1px;
+font-weight:800}
+.hm-body{padding:14px 18px;overflow-y:auto;display:grid;
+grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.cheat{padding:9px 12px;border-radius:7px;background:rgba(255,255,255,.04);
+border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between;
+gap:8px;transition:.18s;cursor:pointer;font-size:11.5px;color:#c4d6e0;font-weight:600}
+.cheat:hover{background:rgba(255,43,214,.08);border-color:rgba(255,43,214,.35)}
+.cheat.on{background:rgba(0,255,156,.14);border-color:rgba(0,255,156,.55);color:#d6fff2}
+.cheat .nm{flex:1;display:flex;align-items:center;gap:8px}
+.cheat .ci{width:16px;height:16px;color:#7dffd0;flex:0 0 auto;filter:drop-shadow(0 0 4px currentColor)}
+.cheat.on .ci{color:var(--grn)}
+.cheat .ci svg{width:100%;height:100%}
+.cheat .tg{width:30px;height:16px;background:rgba(255,255,255,.14);border-radius:8px;
+position:relative;transition:.2s;flex:0 0 auto}
+.cheat .tg::before{content:'';position:absolute;width:12px;height:12px;border-radius:50%;
+background:#fff;top:2px;left:2px;transition:.2s}
+.cheat.on .tg{background:var(--grn)}
+.cheat.on .tg::before{transform:translateX(14px)}
+.hm-footer{padding:12px 18px;border-top:1px solid rgba(255,43,214,.3);
+background:rgba(3,8,14,.85);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hm-footer .prog{flex:1;min-width:120px;height:10px;background:rgba(255,43,214,.1);
+border:1px solid rgba(255,43,214,.3);border-radius:5px;overflow:hidden}
+.hm-footer .fill{height:100%;width:0%;background:linear-gradient(90deg,#ff2bd6,#00e5ff);
+transition:width .25s}
+.hm-btn{font-family:var(--mono);font-size:12px;font-weight:900;letter-spacing:1.5px;
+padding:10px 20px;border-radius:6px;cursor:pointer;transition:.18s;border:1px solid;
+white-space:nowrap}
+.hm-btn.inject{background:rgba(255,43,214,.2);border-color:var(--mag);color:#ffb0f0}
+.hm-btn.inject:hover{background:var(--mag);color:#fff}
+.hm-btn.inject:disabled{opacity:.4;cursor:not-allowed}
+.hm-btn.launch{background:rgba(0,255,156,.2);border-color:var(--grn);color:var(--grn);
+animation:launchPulse 1.4s infinite alternate;display:none}
+.hm-btn.launch.show{display:block}
+@keyframes launchPulse{0%{box-shadow:0 0 12px rgba(0,255,156,.4)}
+100%{box-shadow:0 0 32px rgba(0,255,156,.9)}}
+.hm-status{font-size:10.5px;color:#7dffd0;padding:6px 0 0;grid-column:1/-1;
+font-family:var(--mono);min-height:16px}
+.app-mlbb{height:100%;display:flex;flex-direction:column;background:#0a0f1c;
+overflow:hidden;position:relative}
+.mlbb-load{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+justify-content:center;background:linear-gradient(160deg,#1a0e2e,#0c0820 50%,#0a1a2e);
+gap:20px;z-index:5}
+.mlbb-load.gone{display:none}
+.mlbb-logo{font-size:34px;font-weight:900;letter-spacing:3px;
+background:linear-gradient(90deg,#ffd166,#ff2bd6,#00e5ff,#ffd166);
+-webkit-background-clip:text;background-clip:text;color:transparent;
+filter:drop-shadow(0 0 24px rgba(255,43,214,.7));text-align:center;line-height:1.1}
+.mlbb-load .bar{width:min(320px,70%);height:6px;background:rgba(255,255,255,.1);
+border-radius:3px;overflow:hidden}
+.mlbb-load .fill{height:100%;width:0%;
+background:linear-gradient(90deg,#ffd166,#ff2bd6,#00e5ff);transition:width .3s}
+.mlbb-load .tip{font-size:11px;color:#a5a0c0;letter-spacing:1px}
+.mlbb-hud{flex:0 0 auto;padding:8px 14px;background:linear-gradient(90deg,#1a0e2e,#0c0820);
+border-bottom:1px solid rgba(255,43,214,.35);display:flex;align-items:center;gap:12px;
+font-size:11px;color:#e0d8ff;font-weight:800;letter-spacing:.5px}
+.mlbb-hud .sc{color:#ffd166;font-size:14px}
+.mlbb-hud .tm{color:#a5a0c0;font-family:var(--mono)}
+.mlbb-hud .sp{flex:1}
+.mlbb-hud .kb{color:#00ff9c}
+#mlbbCanvas{flex:1 1 auto;width:100%;background:radial-gradient(ellipse at center,#1a2540,#060912 70%);
+display:block;touch-action:none}
+.mlbb-foot{flex:0 0 auto;padding:8px 14px;background:linear-gradient(90deg,#0c0820,#1a0e2e);
+border-top:1px solid rgba(255,43,214,.35);display:flex;gap:12px;align-items:center;font-size:11px}
+.mlbb-foot .ability{width:38px;height:38px;border-radius:50%;
+background:radial-gradient(circle at 30% 30%,#ffd166,#8a5c10);border:2px solid #ffd166;
+display:flex;align-items:center;justify-content:center;cursor:pointer;
+box-shadow:0 0 14px rgba(255,209,102,.6);color:#1a0e2e}
+.mlbb-foot .ability:active{transform:scale(.92)}
+.mlbb-foot .ability svg{width:20px;height:20px}
+.mlbb-foot .stats{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.mlbb-foot .hp{height:11px;background:rgba(255,90,122,.15);
+border:1px solid rgba(255,90,122,.4);border-radius:5px;overflow:hidden}
+.mlbb-foot .hp>div{height:100%;width:100%;
+background:linear-gradient(90deg,#ff5a7a,#ff8fa6);transition:width .2s}
+.mlbb-foot .mp{height:8px;background:rgba(0,229,255,.12);
+border:1px solid rgba(0,229,255,.4);border-radius:4px;overflow:hidden}
+.mlbb-foot .mp>div{height:100%;width:100%;
+background:linear-gradient(90deg,#00e5ff,#7dffd0);transition:width .2s}
+.mlbb-foot .exit{background:rgba(255,90,122,.15);border:1px solid rgba(255,90,122,.5);
+color:#ff8fa6;font-family:var(--mono);font-size:10px;font-weight:800;padding:7px 12px;
+border-radius:5px;cursor:pointer;letter-spacing:1px}
+.mlbb-foot .exit:hover{background:rgba(255,90,122,.35);color:#fff}
+.mlbb-victory{position:absolute;inset:0;background:rgba(2,4,8,.92);display:none;
+flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:8}
+.mlbb-victory.show{display:flex}
+.mlbb-victory .big{font-size:44px;font-weight:900;letter-spacing:.16em;
+background:linear-gradient(90deg,#ffd166,#ff2bd6,#00ff9c);
+-webkit-background-clip:text;background-clip:text;color:transparent}
+.mlbb-victory .st{font-size:14px;color:#a5a0c0;letter-spacing:2px}
+.mlbb-victory .mvp{font-size:12px;color:#ffd166;letter-spacing:1.5px;margin-top:4px}
+.mlbb-victory button{margin-top:20px;background:rgba(255,209,102,.2);
+border:1px solid #ffd166;color:#ffd166;font-family:var(--mono);font-size:12px;font-weight:800;
+padding:10px 26px;border-radius:6px;cursor:pointer;letter-spacing:2px}
+.app-music{padding:16px;display:flex;flex-direction:column;gap:12px;height:100%;
+background:linear-gradient(180deg,rgba(0,20,15,.6),rgba(2,8,12,.95))}
+.mus-hero{display:flex;gap:14px;align-items:center}
+.mus-cover{width:80px;height:80px;border-radius:8px;flex:0 0 auto;
+background:linear-gradient(135deg,#00e5ff,#ff2bd6,#00ff9c);
+display:flex;align-items:center;justify-content:center;
+box-shadow:0 0 20px rgba(0,229,255,.4);animation:coverPulse 3s infinite}
+@keyframes coverPulse{50%{box-shadow:0 0 32px rgba(255,43,214,.6)}}
+.mus-cover-inner{background:rgba(0,0,0,.45);width:60px;height:60px;border-radius:6px;
+display:flex;align-items:center;justify-content:center;color:#00ff9c}
+.mus-cover-inner svg{width:32px;height:32px;filter:drop-shadow(0 0 10px currentColor)}
+.mus-meta{flex:1;min-width:0}
+.mus-title{font-size:15px;font-weight:800;color:#d6fff2;overflow:hidden;
+text-overflow:ellipsis;white-space:nowrap}
+.mus-artist{font-size:11px;color:#7dffd0;margin-top:3px;letter-spacing:1px}
+.mus-time{font-size:10.5px;color:#4dbf9a;margin-top:6px;display:flex;gap:6px;font-family:var(--mono)}
+#musViz{width:100%;height:auto;background:rgba(0,0,0,.4);border-radius:6px;
+border:1px solid rgba(0,255,156,.15)}
+.mus-progress{height:4px;background:rgba(0,255,156,.1);border-radius:2px;overflow:hidden}
+.mus-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#00e5ff,#00ff9c);
+transition:width .3s}
+.mus-controls{display:flex;gap:14px;justify-content:center;align-items:center}
+.mus-controls button{background:rgba(0,255,156,.08);border:1px solid rgba(0,255,156,.3);
+color:#7dffd0;width:38px;height:38px;border-radius:50%;cursor:pointer;
+display:flex;align-items:center;justify-content:center;transition:.15s}
+.mus-controls button:hover{background:rgba(0,255,156,.22);color:#fff}
+.mus-controls button svg{width:16px;height:16px}
+.mus-controls button.play{width:48px;height:48px;background:rgba(0,255,156,.18);
+border-color:var(--grn);color:var(--grn)}
+.mus-controls button.play svg{width:20px;height:20px}
+.mus-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.mus-item{padding:8px 12px;border-radius:5px;background:rgba(255,255,255,.03);
+border:1px solid transparent;cursor:pointer;display:flex;gap:10px;
+align-items:center;font-size:11.5px;color:#a9c4bd;transition:.15s}
+.mus-item:hover{background:rgba(0,255,156,.08);border-color:rgba(0,255,156,.2)}
+.mus-item.active{background:rgba(0,255,156,.14);border-color:rgba(0,255,156,.4);color:#d6fff2}
+.mus-item .num{color:#3f7a68;font-weight:800;font-size:10px;width:18px;text-align:center}
+.mus-item.active .num{color:var(--grn)}
+.mus-item .title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mus-item .dur{color:#4dbf9a;font-size:10.5px;font-family:var(--mono)}
+.app-files{display:grid;grid-template-columns:180px 1fr;height:100%}
+.files-side{background:rgba(0,20,15,.5);border-right:1px solid rgba(0,255,156,.15);
+padding:10px 0;overflow-y:auto}
+.files-side-item{padding:7px 14px;font-size:11.5px;color:#7dffd0;cursor:pointer;
+display:flex;gap:8px;align-items:center;border-left:2px solid transparent}
+.files-side-item:hover{background:rgba(0,255,156,.06);color:#fff}
+.files-side-item.active{background:rgba(0,255,156,.12);color:var(--grn);
+border-left-color:var(--grn)}
+.files-main{padding:10px;overflow-y:auto}
+.files-path{font-size:10.5px;color:#3f7a68;margin-bottom:10px;padding:4px 8px;
+background:rgba(0,255,156,.04);border-radius:4px;font-family:var(--mono)}
+.files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
+.files-item{padding:10px 6px;border-radius:6px;background:rgba(255,255,255,.03);
+border:1px solid transparent;cursor:pointer;text-align:center;transition:.15s}
+.files-item:hover{background:rgba(0,255,156,.08);border-color:rgba(0,255,156,.3)}
+.files-item .f-ic{color:#00e5ff;margin-bottom:4px;
+display:flex;align-items:center;justify-content:center}
+.files-item .f-ic svg{width:22px;height:22px;filter:drop-shadow(0 0 6px currentColor)}
+.files-item .f-nm{font-size:10px;color:#a9c4bd;overflow:hidden;
+text-overflow:ellipsis;white-space:nowrap}
+.app-settings{padding:16px;display:flex;flex-direction:column;gap:18px;height:100%;
+overflow-y:auto}
+.set-group{display:flex;flex-direction:column;gap:8px}
+.set-group h4{margin:0;font-size:10.5px;letter-spacing:1.5px;color:#4dbf9a;
+text-transform:uppercase;font-weight:800}
+.set-row{display:flex;align-items:center;justify-content:space-between;
+padding:8px 12px;background:rgba(0,255,156,.04);border-radius:6px;
+border:1px solid rgba(0,255,156,.1);font-size:12px;color:#d6fff2}
+.set-row .lab{display:flex;align-items:center;gap:8px}
+.set-row .lab svg{width:16px;height:16px;color:#00ff9c}
+.set-row input[type=color]{width:40px;height:24px;border:1px solid rgba(0,255,156,.3);
+border-radius:5px;background:transparent;cursor:pointer;padding:1px}
+.set-row .sw2{position:relative;width:38px;height:20px}
+.set-row .sw2 input{opacity:0;width:0;height:0}
+.set-row .sw2 span{position:absolute;inset:0;background:rgba(0,255,156,.15);
+border-radius:20px;cursor:pointer;transition:.2s;border:1px solid rgba(0,255,156,.3)}
+.set-row .sw2 span:before{content:'';position:absolute;width:14px;height:14px;
+left:2px;top:2px;background:#7dffd0;border-radius:50%;transition:.2s}
+.set-row .sw2 input:checked+span{background:rgba(0,255,156,.5);border-color:var(--grn)}
+.set-row .sw2 input:checked+span:before{transform:translateX(18px);background:#fff}
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);z-index:80;
+background:rgba(3,14,11,.95);border:1px solid rgba(0,255,156,.45);color:#baffea;
+padding:10px 20px;border-radius:8px;font-size:12px;font-weight:700;opacity:0;
+pointer-events:none;transition:.25s;white-space:nowrap}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:640px){
+.tag{font-size:9.5px}.hbtn{padding:6px 8px;font-size:9.5px}
+#hint{font-size:9px;max-width:55vw}
+#icons{top:48px;left:10px;grid-template-columns:repeat(auto-fill,80px);gap:10px 6px}
+.dicon{width:80px;padding:8px 4px}
+.dicon .ic-svg{width:26px;height:26px}
+.dicon .nm{font-size:9px}
+.os-window{min-width:0;min-height:0}
+.hm-body{grid-template-columns:1fr}
+.app-files{grid-template-columns:1fr}
+.files-side{display:none}
+}
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+<div id="hud">
+  <div class="tag">NULLSEC // <b>ROOM_404</b></div>
+  <div id="hint">KLIK: kasur · komputer · tanaman · pintu · lampu · poster · jam</div>
+  <div class="hbtns">
+    <button class="hbtn" id="btnShot">📷 SHOT</button>
+    <button class="hbtn" id="btnReset">↺ RESET</button>
+  </div>
+</div>
+
+<div id="boot">
+  <div id="bootTitle">SECURE BOOT SEQUENCE</div>
+  <div id="bootLog"></div>
+  <div id="bootBarWrap">
+    <div id="bootBar"><div id="bootFill"></div></div>
+    <div id="bootPct">0%</div>
+  </div>
+</div>
+
+<div id="os">
+  <div id="osGrid"></div>
+  <div class="os-top">
+    <span class="logo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg> NULLSEC_OS</span>
+    <span class="stat"><span>CPU <b id="statCpu">0</b>%</span><span>RAM <b id="statRam">0</b>%</span><span>NET <b id="statNet">0</b>%</span></span>
+    <span class="sp"></span>
+    <span class="clock" id="osClock">--:--:--</span>
+    <button class="power" id="btnPower">⏻ DISCONNECT</button>
+  </div>
+  <div id="icons"></div>
+  <div id="windows"></div>
+  <div id="taskbar">
+    <button class="start" id="btnStart">▤ START</button>
+    <div id="tasks"></div>
+    <div id="tbClock">--:--</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.166.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.166.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+/* ============ UTILS ============ */
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const easeOutCubic = t => 1 - Math.pow(1-t,3);
+const easeInOutCubic = t => t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+const easeInOutSine = t => -(Math.cos(Math.PI*t)-1)/2;
+const lerp = (a,b,t) => a+(b-a)*t;
+function shortestAngle(a,b){let d=(b-a)%(Math.PI*2);if(d>Math.PI)d-=Math.PI*2;if(d<-Math.PI)d+=Math.PI*2;return d}
+const tweens = [];
+function tweenTo(dur,onUpdate,ease=easeInOutCubic){
+  return new Promise(resolve=>{tweens.push({t:0,dur,onUpdate,ease,resolve})});
+}
+function updateTweens(dt){
+  for(let i=tweens.length-1;i>=0;i--){
+    const tw=tweens[i]; tw.t+=dt;
+    const raw=Math.min(1,tw.t/tw.dur);
+    try{tw.onUpdate(tw.ease(raw),raw)}catch(e){console.error(e)}
+    if(raw>=1){tweens.splice(i,1);tw.resolve()}
+  }
+}
+let toastTimer;
+function toast(msg){
+  const el=$('toast'); el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2100);
+}
+
+/* ============ SVG ICONS ============ */
+const ICON_PATHS = {
+  terminal:'<rect x="2" y="3" width="20" height="18" rx="2"/><path d="M6 8l4 4-4 4M12 16h6"/>',
+  sysmon:'<path d="M3 3v18h18"/><path d="M7 15l3-4 3 3 5-7"/>',
+  radar:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12l6-6"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>',
+  code:'<path d="M8 6l-6 6 6 6M16 6l6 6-6 6"/>',
+  cipher:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 118 0v3"/><circle cx="12" cy="15.5" r="1.5" fill="currentColor"/>',
+  webcam:'<circle cx="12" cy="10" r="5"/><circle cx="12" cy="10" r="2"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/>',
+  chat:'<path d="M21 12a8 8 0 11-3-6.2L21 4l-1.2 3.8A8 8 0 0121 12z"/>',
+  hackmod:'<path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/>',
+  mlbb:'<path d="M6 4l6 4 6-4v6l-3 3v5l-3-2-3 2v-5l-3-3z"/>',
+  music:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  files:'<path d="M3 7h6l2 2h10v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
+  play:'<path d="M6 4l14 8-14 8z" fill="currentColor"/>',
+  pause:'<rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/>',
+  prev:'<path d="M19 4l-10 8 10 8z" fill="currentColor"/><rect x="4" y="4" width="2" height="16" fill="currentColor"/>',
+  next:'<path d="M5 4l10 8-10 8z" fill="currentColor"/><rect x="18" y="4" width="2" height="16" fill="currentColor"/>',
+  file:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/>',
+  folder:'<path d="M3 7h6l2 2h10v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>',
+  shield:'<path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/>',
+  sword:'<path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/>',
+  star:'<path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/>',
+  eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
+  speed:'<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  diamond:'<path d="M6 3l-4 6 10 12L22 9l-4-6z"/><path d="M2 9h20M12 3v18"/>',
+  map:'<path d="M9 3l6 3 6-3v16l-6 3-6-3-6 3V6z"/><path d="M9 3v16M15 6v16"/>',
+  aim:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>',
+  drone:'<circle cx="12" cy="12" r="4"/><path d="M4 4l4 4M20 4l-4 4M4 20l4-4M20 20l-4-4"/>'
+};
+function svgIcon(name, size){
+  size = size || 24;
+  const p = ICON_PATHS[name] || ICON_PATHS.terminal;
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+}
+
+/* ============ THREE SETUP ============ */
+const canvas = $('c');
+const renderer = new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.22;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a1220);
+scene.fog = new THREE.FogExp2(0x0a1220, 0.012);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 120);
+const DEF_POS = new THREE.Vector3(5.6, 4.6, 7.0);
+const DEF_TGT = new THREE.Vector3(-0.2, 0.95, -0.2);
+camera.position.copy(DEF_POS).multiplyScalar(2.2);
+camera.lookAt(0,1,0);
+
+const controls = new OrbitControls(camera, canvas);
+controls.target.copy(DEF_TGT);
+controls.enableDamping = true;
+controls.dampingFactor = 0.075;
+controls.rotateSpeed = 0.85;
+controls.zoomSpeed = 0.9;
+controls.enablePan = false;
+controls.minDistance = 2.2;
+controls.maxDistance = 17;
+controls.minPolarAngle = 0.22;
+controls.maxPolarAngle = Math.PI*0.492;
+controls.enabled = false;
+controls.update();
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight), 0.5, 0.55, 0.8);
+composer.addPass(bloom);
+
+let camLocked = false;
+async function camTo(pos,tgt,dur=1.4,ease=easeInOutCubic){
+  camLocked = true;
+  const p0 = camera.position.clone(), t0 = controls.target.clone();
+  await tweenTo(dur, e => {
+    camera.position.lerpVectors(p0,pos,e);
+    controls.target.lerpVectors(t0,tgt,e);
+    camera.lookAt(controls.target);
+  }, ease);
+  camLocked = false;
+}
+
+/* ============ MATERIAL HELPERS ============ */
+function mkMat(c,r=.85,m=.05){return new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m})}
+function emiMat(c,i=2){return new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:i,roughness:.35,metalness:0})}
+function box(w,h,d,mat,x=0,y=0,z=0){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return m}
+function rbox(w,h,d,r,mat,x=0,y=0,z=0){const m=new THREE.Mesh(new RoundedBoxGeometry(w,h,d,2,r),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return m}
+function cyl(rt,rb,h,mat,x=0,y=0,z=0,seg=18){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;return m}
+
+/* ============ ROOM ============ */
+const RW=6, RD=5, RH=3;
+const room = new THREE.Group();
+scene.add(room);
+
+const wallMat = mkMat(0x2a3038,.96,.02);
+const ceilMat = mkMat(0x1a1e26,.98,0);
+
+(function(){
+  const cv=document.createElement('canvas'); cv.width=cv.height=512;
+  const g=cv.getContext('2d');
+  g.fillStyle='#181c24'; g.fillRect(0,0,512,512);
+  g.strokeStyle='rgba(0,229,255,.06)'; g.lineWidth=1;
+  for(let i=0;i<=512;i+=64){
+    g.beginPath(); g.moveTo(i,0); g.lineTo(i,512); g.stroke();
+    g.beginPath(); g.moveTo(0,i); g.lineTo(512,i); g.stroke();
+  }
+  const tex=new THREE.CanvasTexture(cv);
+  tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.repeat.set(3,2.5);
+  tex.colorSpace=THREE.SRGBColorSpace;
+  const floor=new THREE.Mesh(new THREE.BoxGeometry(RW,.2,RD),
+    new THREE.MeshStandardMaterial({map:tex,color:0x8fa4b8,roughness:.72,metalness:.16}));
+  floor.position.y=-.1; floor.receiveShadow=true; room.add(floor);
+})();
+
+const backWall = new THREE.Mesh(new THREE.PlaneGeometry(RW,RH),wallMat);
+backWall.position.set(0,RH/2,-RD/2); backWall.receiveShadow=true; room.add(backWall);
+const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(RD,RH),wallMat);
+leftWall.position.set(-RW/2,RH/2,0); leftWall.rotation.y=Math.PI/2;
+leftWall.receiveShadow=true; room.add(leftWall);
+const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(RD,RH),wallMat);
+rightWall.position.set(RW/2,RH/2,0); rightWall.rotation.y=-Math.PI/2;
+rightWall.receiveShadow=true; room.add(rightWall);
+const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(RW,RH),wallMat);
+frontWall.position.set(0,RH/2,RD/2); frontWall.rotation.y=Math.PI;
+frontWall.receiveShadow=true; room.add(frontWall);
+const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(RW,RD),ceilMat);
+ceiling.position.y=RH; ceiling.rotation.x=Math.PI/2; room.add(ceiling);
+
+const baseMat = mkMat(0x0e1218,.7,.3);
+room.add(box(RW,.12,.04,baseMat,0,.06,-RD/2+.022));
+room.add(box(.04,.12,RD,baseMat,-RW/2+.022,.06,0));
+room.add(box(.04,.12,RD,baseMat,RW/2-.022,.06,0));
+
+const neonCyan = emiMat(0x00e5ff,3.2);
+const neonMag = emiMat(0xff2bd6,3.0);
+room.add(box(5.6,.035,.035,neonCyan,0,RH-.07,-RD/2+.03));
+room.add(box(.035,.035,4.6,neonMag,-RW/2+.03,RH-.07,0));
+room.add(box(.035,.035,4.6,emiMat(0x00ff9c,2.6),RW/2-.03,RH-.07,0));
+
+const rug = new THREE.Mesh(new THREE.CircleGeometry(1.35,40),mkMat(0x1a2230,.98,0));
+rug.rotation.x = -Math.PI/2; rug.position.set(.1,.012,.55);
+rug.receiveShadow=true; room.add(rug);
+const rugRing = new THREE.Mesh(new THREE.RingGeometry(1.05,1.12,40),
+  new THREE.MeshStandardMaterial({color:0x00e5ff,emissive:0x00e5ff,emissiveIntensity:.55,
+  roughness:.5,side:THREE.DoubleSide}));
+rugRing.rotation.x = -Math.PI/2; rugRing.position.set(.1,.016,.55); room.add(rugRing);
+
+(function(){
+  const ww=2.2, wh=1.4, wy=1.75;
+  const glassMat = new THREE.MeshStandardMaterial({
+    color:0x7fd0ff, emissive:0x88ccff, emissiveIntensity:.7,
+    roughness:.1, metalness:.2, transparent:true, opacity:.7});
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(ww,wh),glassMat);
+  glass.position.set(1.6, wy, -RD/2+.016); room.add(glass);
+  const frameMat = mkMat(0x1a1e26,.6,.4);
+  room.add(box(ww+.14,.08,.09,frameMat,1.6,wy+wh/2+.04,-RD/2+.045));
+  room.add(box(ww+.14,.08,.09,frameMat,1.6,wy-wh/2-.04,-RD/2+.045));
+  room.add(box(.08,wh+.16,.09,frameMat,1.6-ww/2-.04,wy,-RD/2+.045));
+  room.add(box(.08,wh+.16,.09,frameMat,1.6+ww/2+.04,wy,-RD/2+.045));
+  room.add(box(.045,wh,.06,frameMat,1.6,wy,-RD/2+.045));
+  const curtMat = mkMat(0x2a2233,.95,0);
+  for(let i=0;i<8;i++){
+    const c = box(.14,wh+.2,.08,curtMat,1.6-ww/2-.3+i*.16,wy,-RD/2+.12);
+    c.rotation.z = (i%2?.04:-.04); room.add(c);
+  }
+  for(let i=0;i<8;i++){
+    const c = box(.14,wh+.2,.08,curtMat,1.6+ww/2+.1+i*.16,wy,-RD/2+.12);
+    c.rotation.z = (i%2?.04:-.04); room.add(c);
+  }
+})();
+
+/* ============ SCREEN TEXTURE ============ */
+const sc = document.createElement('canvas'); sc.width=512; sc.height=320;
+const sctx = sc.getContext('2d');
+const screenTex = new THREE.CanvasTexture(sc);
+screenTex.colorSpace = THREE.SRGBColorSpace;
+const HEXC = '0123456789ABCDEF';
+const rh = n => {let s='';for(let i=0;i<n;i++)s+=HEXC[Math.floor(Math.random()*16)];return s};
+const screenLines = [];
+function pushLine(){
+  const r=Math.random();
+  if(r<.34) return '0x'+rh(6)+'  '+Array.from({length:6},()=>rh(2)).join(' ');
+  if(r<.60) return '$ '+['sudo ./inject --pid 4192','ssh root@10.13.37.42','nc -lvnp 9001',
+    'python3 exp.py -t 10.13.37.42'][Math.floor(Math.random()*4)];
+  if(r<.86) return '['+(Math.random()<.62?'OK':'!!')+'] '+['packet captured','handshake verified',
+    'tunnel up','key injected','firewall bypassed','node synced'][Math.floor(Math.random()*6)];
+  return '>> '+rh(4)+' pkts / '+Math.floor(Math.random()*999)+'ms';
+}
+function drawScreenTex(){
+  pushLine(); if(Math.random()<.5) pushLine();
+  while(screenLines.length>12) screenLines.shift();
+  const g=sctx;
+  g.fillStyle='#02070a'; g.fillRect(0,0,512,320);
+  g.fillStyle='rgba(0,255,150,.028)';
+  for(let y=0;y<320;y+=4) g.fillRect(0,y,512,1);
+  g.fillStyle='rgba(0,255,170,.14)'; g.fillRect(0,0,512,24);
+  g.font='bold 13px monospace'; g.fillStyle='#00ffaa';
+  g.fillText('root@nullsec:~# tail -f /var/log/breach',10,17);
+  g.font='13px monospace';
+  for(let i=0;i<screenLines.length;i++){
+    const L=screenLines[i];
+    g.fillStyle = L.includes('!!')?'#ff5a7a':L.startsWith('$')?'#7dffd0':'#00d18a';
+    g.fillText(L,10,44+i*19);
+  }
+  if(Math.floor(performance.now()/430)%2===0){
+    g.fillStyle='#00ffaa'; g.fillRect(10,44+screenLines.length*19-12,8,14);
+  }
+  screenTex.needsUpdate=true;
+}
+for(let i=0;i<13;i++) pushLine();
+drawScreenTex();
+
+/* ============ FURNITURE ============ */
+const interactive = [];
+
+const bed = new THREE.Group();
+bed.position.set(-2.15,0,-1.05); bed.userData.action='bed'; scene.add(bed);
+{
+  const fMat=mkMat(0x1a1e26,.6,.45), mMat=mkMat(0x2f3644,.92,0),
+        sMat=mkMat(0x1d2534,.96,0), pMat=mkMat(0x3d4860,.95,0);
+  bed.add(box(1.3,.12,2.1,fMat,0,.34,0));
+  [[-.58,-.95],[.58,-.95],[-.58,.95],[.58,.95]].forEach(([x,z])=>
+    bed.add(box(.08,.34,.08,fMat,x,.17,z)));
+  bed.add(rbox(1.26,.22,2.04,.06,mMat,0,.5,0));
+  bed.add(rbox(1.28,.13,1.32,.05,sMat,0,.66,.34));
+  bed.add(rbox(.72,.15,.4,.06,pMat,0,.68,-.74));
+  bed.add(box(1.34,.9,.09,fMat,0,.66,-1.06));
+  bed.add(box(1.2,.022,.022,emiMat(0x00e5ff,2.4),0,.66,-1.01));
+  bed.add(box(1.1,.02,.02,emiMat(0xff2bd6,2.2),0,.28,1.05));
+}
+interactive.push(bed);
+
+const desk = new THREE.Group();
+desk.position.set(1.15,0,-2.05); desk.userData.action='pc'; scene.add(desk);
+const screenMat = new THREE.MeshBasicMaterial({map:screenTex});
+{
+  const dMat=mkMat(0x1e2228,.5,.55);
+  desk.add(box(1.9,.06,.66,dMat,0,.76,0));
+  [[-.9,-.28],[.9,-.28],[-.9,.28],[.9,.28]].forEach(([x,z])=>desk.add(box(.06,.76,.06,dMat,x,.38,z)));
+  desk.add(box(1.9,.5,.04,mkMat(0x181c22,.7,.3),0,.5,-.3));
+  desk.add(box(1.7,.02,.02,emiMat(0x00e5ff,2.2),0,.73,-.3));
+  const monMat=mkMat(0x0a0c12,.4,.75);
+  function makeMonitor(w,h,x,y,z,ry){
+    const g=new THREE.Group();
+    g.add(box(.32,.03,.22,monMat,0,.015,0));
+    g.add(box(.05,.2,.05,monMat,0,.12,0));
+    const cy=.24+h/2;
+    g.add(box(w+.06,h+.06,.05,monMat,0,cy,0));
+    const s=new THREE.Mesh(new THREE.PlaneGeometry(w,h),screenMat);
+    s.position.set(0,cy,.031); g.add(s);
+    const pl=new THREE.PointLight(0x00ffc8,.9,2.4,2);
+    pl.position.set(0,cy,.35); g.add(pl);
+    g.position.set(x,y,z); g.rotation.y=ry; return g;
+  }
+  desk.add(makeMonitor(.96,.55,0,.79,-.16,0));
+  desk.add(makeMonitor(.5,.32,-.72,.79,-.08,.42));
+  desk.add(makeMonitor(.5,.32,.72,.79,-.08,-.42));
+  desk.add(rbox(.56,.025,.18,.012,mkMat(0x0d1015,.6,.3),0,.795,.22));
+  desk.add(box(.5,.004,.13,emiMat(0x00e5ff,1.5),0,.81,.22));
+  desk.add(rbox(.07,.03,.11,.03,mkMat(0x0d1015,.6,.3),.42,.8,.22));
+  const tower=new THREE.Group();
+  tower.position.set(.72,0,-.02);
+  tower.add(box(.22,.5,.46,mkMat(0x0e1116,.45,.7),0,.25,0));
+  tower.add(box(.02,.38,.02,emiMat(0x00ff9c,2.6),-.111,.25,-.12));
+  tower.add(box(.02,.38,.02,emiMat(0xff2bd6,2.6),-.111,.25,-.02));
+  tower.add(box(.02,.38,.02,emiMat(0x00e5ff,2.6),-.111,.25,.08));
+  desk.add(tower);
+}
+interactive.push(desk);
+
+/* CHAIR - fixed orientation */
+const chair = new THREE.Group();
+chair.position.set(1.2,0,-1.42);
+chair.rotation.y = Math.PI;
+chair.userData.action='pc';
+scene.add(chair);
+{
+  const cMat=mkMat(0x151a24,.7,.25), mMetal=mkMat(0x2a3038,.38,.85);
+  chair.add(rbox(.52,.1,.5,.04,cMat,0,.46,0));
+  chair.add(rbox(.5,.62,.1,.05,cMat,0,.8,-.23));
+  chair.add(box(.1,.4,.1,mMetal,0,.24,0));
+  for(let i=0;i<5;i++){
+    const a=i/5*Math.PI*2;
+    const arm=box(.06,.04,.3,mMetal,Math.sin(a)*.15,.06,Math.cos(a)*.15);
+    arm.rotation.y=a; chair.add(arm);
+    const wh=new THREE.Mesh(new THREE.SphereGeometry(.045,10,8),mkMat(0x0a0c12,.5,.2));
+    wh.position.set(Math.sin(a)*.29,.05,Math.cos(a)*.29); wh.castShadow=true; chair.add(wh);
+  }
+}
+interactive.push(chair);
+
+const plant = new THREE.Group();
+plant.position.set(-2.55,0,1.8); plant.userData.action='plant'; scene.add(plant);
+{
+  const potMat=mkMat(0x2a3038,.8,.2), leafA=mkMat(0x2c7a52,.9,0), leafB=mkMat(0x3f9c66,.9,0);
+  plant.add(cyl(.19,.15,.38,potMat,0,.19,0,22));
+  plant.add(cyl(.165,.165,.03,mkMat(0x2c2118,1,0),0,.385,0,22));
+  plant.add(cyl(.022,.03,.5,mkMat(0x4a3a2a,.95,0),0,.62,0,8));
+  [[0,.98,0,.23,0],[.16,.9,.07,.17,1],[-.15,.92,-.06,.18,1],
+   [.06,1.12,-.08,.15,0],[-.09,1.06,.11,.14,0],[.1,1.02,-.12,.12,1],
+   [-.12,1.16,.02,.12,1]].forEach(([x,y,z,r,m])=>{
+    const s=new THREE.Mesh(new THREE.IcosahedronGeometry(r,0),m?leafB:leafA);
+    s.position.set(x,y,z); s.castShadow=true; s.receiveShadow=true; plant.add(s);
+  });
+}
+interactive.push(plant);
+
+(function(){
+  const g = new THREE.Group();
+  g.position.set(2.55,0,-2.0);
+  const potMat=mkMat(0x1e2328,.8,.2), leaf=mkMat(0x3f9c66,.9,0);
+  g.add(cyl(.13,.1,.28,potMat,0,.14,0,18));
+  g.add(cyl(.045,.045,.55,mkMat(0x4a3a2a,.95,0),0,.42,0,8));
+  for(let i=0;i<6;i++){
+    const a = i/6*Math.PI*2;
+    const l = new THREE.Mesh(new THREE.IcosahedronGeometry(.13,0),leaf);
+    l.position.set(Math.cos(a)*.18,.62+Math.sin(i)*.1,Math.sin(a)*.18);
+    l.castShadow = true; g.add(l);
+  }
+  scene.add(g);
+})();
+
+const doorGroup = new THREE.Group();
+doorGroup.position.set(2.94,0,1.35); doorGroup.rotation.y=-Math.PI/2;
+doorGroup.userData.action='door'; scene.add(doorGroup);
+let doorPivot;
+{
+  const fMat = mkMat(0x2a3038,.6,.4);
+  doorGroup.add(box(1.14,2.24,.12,fMat,0,1.12,-.02));
+  doorGroup.add(box(1.2,.035,.14,emiMat(0x00e5ff,2.0),0,2.25,-.02));
+  doorPivot = new THREE.Group(); doorPivot.position.set(-.52,0,.035); doorGroup.add(doorPivot);
+  doorPivot.add(rbox(1.0,2.1,.06,.02,mkMat(0x1a202a,.8,.2),.5,1.05,0));
+  doorPivot.add(box(.05,.05,.1,emiMat(0x00ff9c,2.2),.9,1.05,.07));
+  doorPivot.add(box(.9,.015,.015,emiMat(0x00ff9c,1.6),.5,1.7,.04));
+}
+interactive.push(doorGroup);
+
+const lampGroup = new THREE.Group();
+lampGroup.position.set(-2.55,0,.55); lampGroup.userData.action='lamp'; scene.add(lampGroup);
+const lampShadeMat = new THREE.MeshStandardMaterial({
+  color:0xfff0d0, emissive:0xffd9a0, emissiveIntensity:1.6,
+  roughness:.85, metalness:0, side:THREE.DoubleSide});
+const lampLight = new THREE.PointLight(0xffd9a0,1.8,5.5,2);
+{
+  lampGroup.add(cyl(.18,.18,.04,mkMat(0x1a1e26,.5,.6),0,.02,0,24));
+  lampGroup.add(cyl(.024,.024,1.5,mkMat(0x2a303a,.4,.85),0,.77,0,10));
+  const shade = new THREE.Mesh(new THREE.ConeGeometry(.27,.32,26,1,true), lampShadeMat);
+  shade.position.y=1.62; shade.rotation.x=Math.PI; lampGroup.add(shade);
+  lampLight.position.set(0,1.5,0); lampGroup.add(lampLight);
+}
+interactive.push(lampGroup);
+
+let posterMesh;
+(function(){
+  const cv=document.createElement('canvas'); cv.width=512; cv.height=700;
+  const g=cv.getContext('2d');
+  g.fillStyle='#06090e'; g.fillRect(0,0,512,700);
+  g.strokeStyle='#00ff9c'; g.lineWidth=6; g.strokeRect(14,14,484,672);
+  g.fillStyle='#00ff9c'; g.font='bold 92px monospace'; g.fillText('HACK',42,190);
+  g.fillStyle='#ff2bd6'; g.fillText('THE',42,300);
+  g.fillStyle='#00e5ff'; g.fillText('PLANET',42,410);
+  g.fillStyle='#2e7a63'; g.font='20px monospace';
+  for(let i=0;i<9;i++){
+    let s=''; for(let j=0;j<28;j++) s+=HEXC[Math.floor(Math.random()*16)];
+    g.fillText(s,42,470+i*22);
+  }
+  g.fillStyle='#00ff9c'; g.font='bold 26px monospace'; g.fillText('// ROOM 404',42,660);
+  const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace;
+  posterMesh = new THREE.Mesh(new THREE.PlaneGeometry(.95,1.3),
+    new THREE.MeshStandardMaterial({map:tex,emissive:0xffffff,emissiveMap:tex,
+    emissiveIntensity:.65,roughness:.9}));
+  posterMesh.position.set(-RW/2+.03,1.95,-1.05); posterMesh.rotation.y=Math.PI/2;
+  posterMesh.userData.action='poster'; scene.add(posterMesh);
+})();
+interactive.push(posterMesh);
+
+(function(){
+  const cv=document.createElement('canvas'); cv.width=400; cv.height=560;
+  const g=cv.getContext('2d');
+  const grad = g.createLinearGradient(0,0,400,560);
+  grad.addColorStop(0,'#1a0e2e'); grad.addColorStop(1,'#0a1a2e');
+  g.fillStyle=grad; g.fillRect(0,0,400,560);
+  g.strokeStyle='#ffd166'; g.lineWidth=5; g.strokeRect(12,12,376,536);
+  g.fillStyle='#ffd166'; g.font='bold 68px monospace'; g.fillText('ML',42,160);
+  g.fillStyle='#ff2bd6'; g.fillText('BB',42,240);
+  g.fillStyle='#00e5ff'; g.font='bold 22px monospace'; g.fillText('SEASON 40',42,290);
+  g.fillStyle='#a5a0c0'; g.font='16px monospace';
+  g.fillText('>> LEGEND NEVER DIES',42,340);
+  g.fillStyle='#00ff9c'; g.font='bold 24px monospace'; g.fillText('ROOM 404',42,520);
+  const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace;
+  const p=new THREE.Mesh(new THREE.PlaneGeometry(.75,1.05),
+    new THREE.MeshStandardMaterial({map:tex,emissive:0xffffff,emissiveMap:tex,
+    emissiveIntensity:.5,roughness:.9}));
+  p.position.set(-RW/2+.03,1.55,.65); p.rotation.y=Math.PI/2; scene.add(p);
+})();
+
+let clockSec, clockMin, clockHour;
+(function(){
+  const g = new THREE.Group();
+  g.position.set(-RW/2+.05, 2.35, 1.6); g.rotation.y = Math.PI/2;
+  g.add(new THREE.Mesh(new THREE.CircleGeometry(.28,40), mkMat(0xf0e8d0,.9,0)));
+  g.add(new THREE.Mesh(new THREE.TorusGeometry(.29,.022,8,32), mkMat(0x1a1e26,.5,.7)));
+  for(let i=0;i<12;i++){
+    const a = i/12*Math.PI*2;
+    const t = box(.02,.05,.01,mkMat(0x1a1e26,1,0),Math.cos(a)*.22,Math.sin(a)*.22,.015);
+    t.rotation.z = -a; g.add(t);
+  }
+  const mkHand = (len,w,color) => {
+    const hand = new THREE.Mesh(new THREE.BoxGeometry(w,len,.006), mkMat(color,.6,.4));
+    const pivot = new THREE.Group(); hand.position.y = len/2; pivot.add(hand);
+    pivot.position.z = .022; return pivot;
+  };
+  clockHour = mkHand(.13,.022,0x0a0c12);
+  clockMin  = mkHand(.20,.015,0x0a0c12);
+  clockSec  = mkHand(.24,.008,0xff2bd6);
+  g.add(clockHour); g.add(clockMin); g.add(clockSec);
+  scene.add(g);
+  g.userData.action = 'clock';
+  const hit = new THREE.Mesh(new THREE.CircleGeometry(.32,20),
+    new THREE.MeshBasicMaterial({visible:false}));
+  hit.position.z = .05; g.add(hit);
+  interactive.push(g);
+})();
+
+(function(){
+  const g = new THREE.Group();
+  g.position.set(2.9, 0, -0.9); g.rotation.y = -Math.PI/2;
+  const sMat = mkMat(0x1e242c,.7,.2);
+  g.add(box(.9,.05,.28,sMat,0,1.4,0));
+  g.add(box(.9,.05,.28,sMat,0,1.85,0));
+  g.add(box(.9,.05,.28,sMat,0,2.3,0));
+  g.add(box(.05,.95,.28,sMat,-.43,1.85,0));
+  g.add(box(.05,.95,.28,sMat,.43,1.85,0));
+  const cols=[0xb4553f,0x3f6b8f,0xc9a227,0x4a7a52,0x8b5a8c,0x2f4858,0xc96b3a];
+  for(let row=0;row<3;row++){
+    const y = 1.42 + row*0.45;
+    let x = -.38;
+    for(let i=0;i<7;i++){
+      const bw = .05+Math.random()*.03;
+      const bh = .22+Math.random()*.12;
+      if(x+bw>.38) break;
+      g.add(box(bw,bh,.18,mkMat(cols[(i+row*2)%cols.length],.9,0),x+bw/2,y+bh/2,.02));
+      x += bw+.015;
+    }
+  }
+  g.add(box(.08,.1,.05,emiMat(0xffd166,.8),-.28,1.9,.04));
+  scene.add(g);
+})();
+
+(function(){
+  const g = new THREE.Group();
+  g.position.set(-2.85, 0, -0.05); g.rotation.z = .13; g.rotation.y = Math.PI/2;
+  const bodyMat = mkMat(0x6b3a1a,.6,.15), neckMat = mkMat(0x3a2a1a,.7,0);
+  const b1 = cyl(.16,.16,.06,bodyMat,0,.22,0,24); b1.rotation.x=Math.PI/2; g.add(b1);
+  const b2 = cyl(.11,.11,.05,bodyMat,0,.4,0,24); b2.rotation.x=Math.PI/2; g.add(b2);
+  g.add(box(.06,.65,.05,neckMat,0,.85,0));
+  g.add(box(.09,.04,.06,mkMat(0x0a0c12,.6,.4),0,1.22,0));
+  for(let i=0;i<4;i++){
+    g.add(box(.005,.85,.001,emiMat(0x9a8a7a,.3),-.02+i*.014,.75,0));
+  }
+  scene.add(g);
+})();
+
+(function(){
+  const g = new THREE.Group();
+  g.position.set(-2.55, 0, .05);
+  const bodyMat = mkMat(0x1a1e26,.6,.3);
+  g.add(box(.55,.95,.55,bodyMat,0,.475,0));
+  g.add(box(.02,.5,.02,emiMat(0x00e5ff,1.8),-.276,.7,-.2));
+  g.add(box(.02,.02,.02,emiMat(0x00ff9c,2),-.276,.55,-.2));
+  g.add(box(.03,.08,.06,mkMat(0x2a3038,.4,.8),.24,.85,.24));
+  const glow = new THREE.PointLight(0x00e5ff,.4,1.2,2);
+  glow.position.set(0,.7,.3); g.add(glow);
+  scene.add(g);
+})();
+
+(function(){
+  const spool = new THREE.Group();
+  spool.position.set(2.5, 0, -2.55);
+  const m = mkMat(0x2a2018,.7,.1);
+  spool.add(cyl(.28,.28,.08,m,0,.04,0,24));
+  spool.add(cyl(.28,.28,.08,m,0,.28,0,24));
+  spool.add(cyl(.16,.16,.2,m,0,.16,0,20));
+  for(let i=0;i<5;i++){
+    const cable = new THREE.Mesh(new THREE.TorusGeometry(.18-i*.02,.012,6,20), mkMat(0x0a0c12,.8,.1));
+    cable.rotation.x = Math.PI/2 + (Math.random()-.5)*.3;
+    cable.position.set(0,.09+i*.04,0); spool.add(cable);
+  }
+  scene.add(spool);
+})();
+
+(function(){
+  for(let s=0;s<2;s++){
+    const shoe = new THREE.Group();
+    shoe.position.set(2.55, 0, 1.95 + s*.22); shoe.rotation.y = Math.PI/2;
+    const m = mkMat(0x121620,.85,.1);
+    shoe.add(rbox(.13,.08,.26,.03,m,0,.04,0));
+    shoe.add(rbox(.11,.1,.13,.03,m,0,.12,-.05));
+    scene.add(shoe);
+  }
+})();
+
+(function(){
+  const g = new THREE.Group();
+  g.position.set(-1.9, 0, .15); g.rotation.y = .3;
+  const m = mkMat(0x1a2028,.85,.15);
+  g.add(rbox(.32,.42,.2,.06,m,0,.21,0));
+  g.add(rbox(.28,.06,.24,.03,mkMat(0x12161c,.85,.15),0,.42,0));
+  g.add(box(.02,.3,.02,emiMat(0x00e5ff,1.6),.163,.2,0));
+  scene.add(g);
+})();
+
+(function(){
+  const g = new THREE.Group();
+  g.position.set(2.4, 0, .75);
+  const m = mkMat(0x1a1e26,.6,.4);
+  g.add(cyl(.26,.26,.04,m,0,.55,0,24));
+  g.add(cyl(.04,.05,.55,m,0,.275,0,12));
+  g.add(cyl(.2,.2,.02,m,0,.02,0,20));
+  const mug = cyl(.055,.05,.09,mkMat(0xe8d8c0,.85,0),.08,.62,.02,16); g.add(mug);
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(.035,.012,6,14),mkMat(0xe8d8c0,.85,0));
+  handle.position.set(.135,.62,.02); handle.rotation.y = Math.PI/2; g.add(handle);
+  scene.add(g);
+})();
+
+/* ============ LIGHTING ============ */
+scene.add(new THREE.AmbientLight(0x8899bb, 0.95));
+const hemi = new THREE.HemisphereLight(0x8fb6ff, 0x1a1e28, 1.05);
+scene.add(hemi);
+
+const keyLight = new THREE.DirectionalLight(0xc8dcff, 1.85);
+keyLight.position.set(4, 7, 5);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(1024,1024);
+keyLight.shadow.camera.left=-7; keyLight.shadow.camera.right=7;
+keyLight.shadow.camera.top=7; keyLight.shadow.camera.bottom=-7;
+keyLight.shadow.camera.near=.5; keyLight.shadow.camera.far=25;
+keyLight.shadow.bias=-0.0008; keyLight.shadow.normalBias=.02;
+scene.add(keyLight);
+
+const cyanFill = new THREE.PointLight(0x00e5ff, 2.4, 10, 2);
+cyanFill.position.set(0, 2.6, -2.1); scene.add(cyanFill);
+
+const magFill = new THREE.PointLight(0xff2bd6, 1.9, 10, 2);
+magFill.position.set(-2.6, 2.5, 0.4); scene.add(magFill);
+
+const ceilLight = new THREE.PointLight(0xd0e0ff, 1.5, 12, 2);
+ceilLight.position.set(0, 2.85, 0); scene.add(ceilLight);
+
+const windowLight = new THREE.SpotLight(0xffeedd, 2.2, 8, Math.PI*.28, .4, 2);
+windowLight.position.set(1.6, 2.4, -RD/2+.3);
+windowLight.target.position.set(1.6, 0, .5);
+scene.add(windowLight); scene.add(windowLight.target);
+
+const warmFill = new THREE.PointLight(0xffb070, 1.1, 6, 2);
+warmFill.position.set(-2.55, 1.4, .55); scene.add(warmFill);
+
+/* ============ CHARACTER ============ */
+const skinMat = mkMat(0xc9916f,.82,0);
+const hoodieMat = mkMat(0x232a38,.88,.05);
+const jeansMat = mkMat(0x28323f,.9,.05);
+const shoeMat = mkMat(0x0e1014,.65,.15);
+
+const character = new THREE.Group();
+character.position.set(0.2,0,1.0); character.rotation.y = Math.PI*.9; scene.add(character);
+const tilt = new THREE.Group(); character.add(tilt);
+const hips = new THREE.Group(); hips.position.y = .94; tilt.add(hips);
+const rig = {};
+const hipsY = {cur:.94, tgt:.94};
+function reg(name,obj){rig[name]={obj,cur:[0,0,0],tgt:[0,0,0]}}
+
+const torsoPivot = new THREE.Group(); hips.add(torsoPivot);
+{
+  const t=new THREE.Mesh(new RoundedBoxGeometry(.44,.56,.27,2,.07),hoodieMat);
+  t.position.y=.3; t.castShadow=true; t.receiveShadow=true; torsoPivot.add(t);
+  const p=new THREE.Mesh(new THREE.BoxGeometry(.2,.015,.015),emiMat(0x00ff9c,1.4));
+  p.position.set(0,.19,.142); torsoPivot.add(p);
+}
+reg('torso',torsoPivot);
+
+const headPivot = new THREE.Group(); headPivot.position.y=.58; torsoPivot.add(headPivot);
+{
+  const h=new THREE.Mesh(new THREE.SphereGeometry(.135,20,16),skinMat);
+  h.position.y=.13; h.castShadow=true; headPivot.add(h);
+  const hood=new THREE.Mesh(new THREE.SphereGeometry(.175,18,14,0,Math.PI*2,0,Math.PI*.62),hoodieMat);
+  hood.position.set(0,.155,-.035); hood.castShadow=true; headPivot.add(hood);
+  const v=new THREE.Mesh(new THREE.BoxGeometry(.2,.04,.05),emiMat(0x00ffd5,2.6));
+  v.position.set(0,.145,.118); headPivot.add(v);
+}
+reg('head',headPivot);
+
+[-1,1].forEach(side=>{
+  const sh=new THREE.Group(); sh.position.set(side*.27,.5,0); torsoPivot.add(sh);
+  const up=new THREE.Mesh(new RoundedBoxGeometry(.1,.32,.1,2,.04),hoodieMat);
+  up.position.y=-.16; up.castShadow=true; sh.add(up);
+  const el=new THREE.Group(); el.position.y=-.32; sh.add(el);
+  const fore=new THREE.Mesh(new RoundedBoxGeometry(.088,.3,.088,2,.035),hoodieMat);
+  fore.position.y=-.15; fore.castShadow=true; el.add(fore);
+  const hand=new THREE.Mesh(new THREE.SphereGeometry(.055,10,8),skinMat);
+  hand.position.y=-.31; hand.castShadow=true; el.add(hand);
+  reg(side<0?'shoulderL':'shoulderR',sh);
+  reg(side<0?'elbowL':'elbowR',el);
+});
+
+[-1,1].forEach(side=>{
+  const hip=new THREE.Group(); hip.position.set(side*.11,0,0); hips.add(hip);
+  const th=new THREE.Mesh(new RoundedBoxGeometry(.15,.44,.15,2,.05),jeansMat);
+  th.position.y=-.22; th.castShadow=true; hip.add(th);
+  const knee=new THREE.Group(); knee.position.y=-.44; hip.add(knee);
+  const shin=new THREE.Mesh(new RoundedBoxGeometry(.13,.42,.13,2,.045),jeansMat);
+  shin.position.y=-.21; shin.castShadow=true; knee.add(shin);
+  const foot=new THREE.Mesh(new RoundedBoxGeometry(.14,.09,.27,2,.035),shoeMat);
+  foot.position.set(0,-.44,.05); foot.castShadow=true; knee.add(foot);
+  reg(side<0?'hipL':'hipR',hip);
+  reg(side<0?'kneeL':'kneeR',knee);
+});
+
+const POSES = {
+  idle:{torso:[0,0,0],head:[0,0,0],shoulderL:[.08,0,.14],shoulderR:[.08,0,-.14],
+        elbowL:[-.22,0,0],elbowR:[-.22,0,0],hipL:[0,0,.03],hipR:[0,0,-.03],
+        kneeL:[.04,0,0],kneeR:[.04,0,0],hipsY:.94},
+  sit:{torso:[.13,0,0],head:[-.1,0,0],shoulderL:[-.85,0,.13],shoulderR:[-.85,0,-.13],
+       elbowL:[-1.05,0,0],elbowR:[-1.05,0,0],hipL:[-1.5,0,.07],hipR:[-1.5,0,-.07],
+       kneeL:[1.5,0,0],kneeR:[1.5,0,0],hipsY:.56},
+  sleep:{torso:[-.05,0,0],head:[.25,0,0],shoulderL:[.15,0,.55],shoulderR:[.15,0,-.55],
+         elbowL:[-.35,0,.1],elbowR:[-.35,0,-.1],hipL:[.05,0,.08],hipR:[.05,0,-.08],
+         kneeL:[.18,0,0],kneeR:[.22,0,0],hipsY:.94},
+  water:{torso:[.16,0,0],head:[.12,0,0],shoulderL:[.05,0,.14],shoulderR:[-1.35,0,-.18],
+         elbowL:[-.22,0,0],elbowR:[-.35,0,0],hipL:[0,0,.03],hipR:[0,0,-.03],
+         kneeL:[.04,0,0],kneeR:[.04,0,0],hipsY:.94}
+};
+function setPose(name){
+  const p = POSES[name]; if(!p) return;
+  for(const k in p){
+    if(k==='hipsY'){hipsY.tgt=p[k]; continue;}
+    if(rig[k]) rig[k].tgt = p[k].slice();
+  }
+}
+setPose('idle');
+
+let walking=false, typing=false, charState='idle', busy=false;
+
+function updateCharacter(dt,time){
+  const k = 1-Math.exp(-14*dt);
+  for(const n in rig){
+    const r=rig[n];
+    r.cur[0]+=(r.tgt[0]-r.cur[0])*k;
+    r.cur[1]+=(r.tgt[1]-r.cur[1])*k;
+    r.cur[2]+=(r.tgt[2]-r.cur[2])*k;
+    r.obj.rotation.set(r.cur[0],r.cur[1],r.cur[2]);
+  }
+  hipsY.cur += (hipsY.tgt-hipsY.cur)*k;
+  hips.position.y = hipsY.cur;
+  if(walking){
+    const s=Math.sin(time*11);
+    rig.hipL.obj.rotation.x=s*.62; rig.hipR.obj.rotation.x=-s*.62;
+    rig.kneeL.obj.rotation.x=Math.max(0,-s)*.95+.08;
+    rig.kneeR.obj.rotation.x=Math.max(0,s)*.95+.08;
+    rig.shoulderL.obj.rotation.x=-s*.45; rig.shoulderR.obj.rotation.x=s*.45;
+    hips.position.y = hipsY.cur + Math.abs(Math.cos(time*11))*.026;
+  }
+  if(typing){
+    const s=Math.sin(time*16);
+    rig.elbowL.obj.rotation.x += s*.12;
+    rig.elbowR.obj.rotation.x -= s*.12;
+    rig.head.obj.rotation.y = Math.sin(time*.8)*.05;
+  }
+  if(!walking && !typing && charState==='idle'){
+    rig.torso.obj.rotation.x += Math.sin(time*1.7)*.014;
+    rig.head.obj.rotation.y += Math.sin(time*.55)*.06;
+  }
+  if(charState==='sleeping'){
+    tilt.position.y = Math.sin(time*1.4)*0.012;
+    rig.head.obj.rotation.z += Math.sin(time*.35)*0.06;
+    rig.head.obj.rotation.x += Math.sin(time*.28)*0.03;
+    rig.elbowL.obj.rotation.x += Math.sin(time*.55)*0.05;
+    rig.elbowR.obj.rotation.x += Math.sin(time*.55+1)*0.05;
+  } else if(Math.abs(tilt.position.y)>0.001){
+    tilt.position.y *= 0.85;
+    if(Math.abs(tilt.position.y)<0.001) tilt.position.y = 0;
+  }
+}
+
+async function faceTo(angle,dur=.35){
+  const a0=character.rotation.y;
+  const d=shortestAngle(a0,angle);
+  await tweenTo(dur,e=>{character.rotation.y=a0+d*e},easeInOutSine);
+}
+async function walkTo(tx,tz,faceAngle){
+  const sx=character.position.x, sz=character.position.z;
+  const dist=Math.hypot(tx-sx,tz-sz);
+  if(dist<.04){ if(faceAngle!==undefined) await faceTo(faceAngle); return; }
+  walking = true;
+  const dur = Math.min(3.6, Math.max(.42, dist/1.35));
+  const dir = Math.atan2(tx-sx, tz-sz);
+  const a0 = character.rotation.y;
+  const dA = shortestAngle(a0, dir);
+  await tweenTo(dur, e => {
+    character.position.x = sx+(tx-sx)*e;
+    character.position.z = sz+(tz-sz)*e;
+    const rk = Math.min(1, e/.18);
+    character.rotation.y = a0 + dA*rk;
+  }, t => t);
+  walking = false;
+  if(faceAngle!==undefined) await faceTo(faceAngle);
+}
+
+const PC_CAM_POS = new THREE.Vector3(0.35,1.58,-0.75);
+const PC_CAM_TGT = new THREE.Vector3(1.30,1.30,-2.30);
+
+/* ============ INTERACTIONS ============ */
+let lampOn = true, plantScale = 1, neonHue = 0;
+
+async function actBed(){
+  if(busy || osOpen) return;
+  if(charState==='sleeping'){ await wakeUp(); return; }
+  busy = true; charState = 'moving'; setPose('idle');
+  await walkTo(-1.05, -0.35, -Math.PI/2);
+  await faceTo(0, 0.5);
+  const p0 = character.position.clone();
+  const p1 = new THREE.Vector3(-2.15, 0.78, -0.15);
+  const t0 = tilt.rotation.x;
+  await tweenTo(1.4, e => {
+    character.position.lerpVectors(p0, p1, e);
+    tilt.rotation.x = t0*(1-e) + (-Math.PI/2)*e;
+  }, easeInOutCubic);
+  setPose('sleep');
+  charState = 'sleeping';
+  hemi.intensity = .45;
+  cyanFill.intensity = 1.1;
+  toast('Zzz... operator tidur');
+  busy = false;
+}
+async function wakeUp(){
+  busy = true; charState = 'moving';
+  const p0 = character.position.clone();
+  const p1 = new THREE.Vector3(-1.05, 0, -0.35);
+  const t0 = tilt.rotation.x;
+  await tweenTo(1.3, e => {
+    character.position.lerpVectors(p0, p1, e);
+    tilt.rotation.x = t0*(1-e);
+  }, easeInOutCubic);
+  setPose('idle');
+  await sleep(200);
+  await walkTo(0.2, 0.9, Math.PI*0.92);
+  charState = 'idle';
+  hemi.intensity = 1.05;
+  cyanFill.intensity = 2.4;
+  toast('Operator bangun');
+  busy = false;
+}
+async function actPC(){
+  if(busy || osOpen) return;
+  if(charState==='sleeping') await wakeUp();
+  busy = true; charState = 'moving'; setPose('idle');
+  await walkTo(1.2,-0.95,Math.PI);
+  setPose('sit');
+  const p0 = character.position.clone();
+  const p1 = new THREE.Vector3(1.2,0,-1.42);
+  await tweenTo(.85, e => character.position.lerpVectors(p0,p1,e), easeInOutCubic);
+  charState = 'sitting'; typing = true;
+  camTo(PC_CAM_POS, PC_CAM_TGT, 1.6);
+  await sleep(520);
+  openOS();
+  busy = false;
+}
+async function leavePC(){
+  typing = false; setPose('idle');
+  const p0 = character.position.clone();
+  const p1 = new THREE.Vector3(1.2,0,-0.95);
+  await tweenTo(.7, e => character.position.lerpVectors(p0,p1,e), easeInOutCubic);
+  charState = 'idle';
+  await walkTo(0.2,0.9,Math.PI*.92);
+}
+async function actPlant(){
+  if(busy || osOpen || charState==='sleeping') return;
+  busy = true; setPose('idle');
+  const standX = plant.position.x + 0.55;
+  const standZ = plant.position.z;
+  const faceAngle = Math.atan2(plant.position.x - standX, plant.position.z - standZ);
+  await walkTo(standX, standZ, faceAngle);
+  setPose('water');
+  await sleep(1000);
+  setPose('idle');
+  await sleep(250);
+  const s0 = plantScale;
+  await tweenTo(.7, e => {
+    plantScale = s0 + .16*e;
+    plant.scale.setScalar(plantScale);
+  }, easeOutCubic);
+  toast('Tanaman disiram');
+  busy = false;
+}
+async function actDoor(){
+  if(busy || osOpen || charState==='sleeping') return;
+  busy = true; setPose('idle');
+  await walkTo(2.15,1.35,Math.PI/2);
+  await tweenTo(.65, e => { doorPivot.rotation.y = -1.25*e; }, easeInOutCubic);
+  toast('Operator keluar...');
+  await sleep(900);
+  await tweenTo(.65, e => { doorPivot.rotation.y = -1.25*(1-e); }, easeInOutCubic);
+  await walkTo(1.2,0.9,Math.PI*.92);
+  toast('Operator kembali');
+  busy = false;
+}
+async function actLamp(){
+  if(busy || osOpen) return;
+  lampOn = !lampOn;
+  const from = lampLight.intensity, to = lampOn?1.8:0;
+  const eFrom = lampShadeMat.emissiveIntensity, eTo = lampOn?1.6:.05;
+  await tweenTo(.45, e => {
+    lampLight.intensity = lerp(from,to,e);
+    lampShadeMat.emissiveIntensity = lerp(eFrom,eTo,e);
+  }, easeInOutSine);
+  toast(lampOn?'Lampu menyala':'Lampu dimatikan');
+}
+async function actPoster(){
+  if(busy || osOpen) return;
+  const palette=[0x00ff9c,0x00e5ff,0xff2bd6,0xff8a3d,0xa06bff];
+  neonHue=(neonHue+1)%palette.length;
+  const c1=palette[neonHue], c2=palette[(neonHue+2)%palette.length];
+  neonCyan.emissive.setHex(c1); neonCyan.color.setHex(c1);
+  neonMag.emissive.setHex(c2); neonMag.color.setHex(c2);
+  cyanFill.color.setHex(c1); magFill.color.setHex(c2);
+  toast('Neon RGB diganti');
+}
+async function actClock(){
+  if(busy || osOpen) return;
+  toast('Jam dinding: '+new Date().toLocaleTimeString('en-GB'));
+}
+const ACTIONS = {bed:actBed,pc:actPC,plant:actPlant,door:actDoor,lamp:actLamp,poster:actPoster,clock:actClock};
+
+/* ============ PICKING ============ */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+let downPt = null;
+function pickActionAt(cx,cy){
+  const r = canvas.getBoundingClientRect();
+  ndc.x = ((cx-r.left)/r.width)*2-1;
+  ndc.y = -((cy-r.top)/r.height)*2+1;
+  raycaster.setFromCamera(ndc,camera);
+  const hits = raycaster.intersectObjects(interactive,true);
+  for(const h of hits){
+    let n = h.object;
+    while(n){
+      if(n.userData && n.userData.action) return n.userData.action;
+      n = n.parent;
+    }
+  }
+  return null;
+}
+canvas.addEventListener('pointerdown', e => { downPt = {x:e.clientX, y:e.clientY}; });
+canvas.addEventListener('pointerup', e => {
+  if(!downPt) return;
+  const d = Math.hypot(e.clientX-downPt.x, e.clientY-downPt.y);
+  downPt = null;
+  if(d>9 || osOpen) return;
+  const action = pickActionAt(e.clientX,e.clientY);
+  if(action && ACTIONS[action]) ACTIONS[action]();
+});
+let hoverT = 0;
+canvas.addEventListener('pointermove', e => {
+  const now = performance.now();
+  if(now-hoverT<90) return;
+  hoverT = now;
+  if(osOpen){ canvas.style.cursor='default'; return; }
+  canvas.style.cursor = pickActionAt(e.clientX,e.clientY) ? 'pointer' : 'grab';
+});
+
+/* ============ OS ============ */
+let osOpen = false;
+let winCount = 0;
+let zTop = 100;
+const windows = new Map();
+const tasksEl = $('tasks');
+
+function createWindow(id, title, iconName, buildContent){
+  if(windows.has(id)){
+    const w = windows.get(id);
+    if(w.minimized) toggleMinimize(id);
+    bringToFront(id);
+    return w;
+  }
+  const el = document.createElement('div');
+  el.className = 'os-window';
+  const w = 640, h = 420;
+  const maxX = Math.max(20, innerWidth - w - 20);
+  const maxY = Math.max(50, innerHeight - h - 80);
+  const ox = 60 + (winCount*26)%Math.max(1, maxX-60);
+  const oy = 60 + (winCount*22)%Math.max(1, maxY-60);
+  el.style.left = ox+'px'; el.style.top = oy+'px';
+  el.style.width = Math.min(w, innerWidth-40)+'px';
+  el.style.height = Math.min(h, innerHeight-120)+'px';
+  el.innerHTML = `
+    <div class="win-title">
+      <span class="ic">${svgIcon(iconName, 16)}</span>
+      <span class="tt">${title}</span>
+      <div class="ctl">
+        <button class="min">–</button>
+        <button class="cls">×</button>
+      </div>
+    </div>
+    <div class="win-body"></div>`;
+  $('windows').appendChild(el);
+  winCount++;
+  const titleBar = el.querySelector('.win-title');
+  const body = el.querySelector('.win-body');
+  buildContent(body);
+
+  let dragging=false, sx=0, sy=0, sl=0, st=0;
+  titleBar.addEventListener('pointerdown', e => {
+    if(e.target.closest('button')) return;
+    dragging=true; sx=e.clientX; sy=e.clientY; sl=el.offsetLeft; st=el.offsetTop;
+    titleBar.classList.add('drag'); el.style.zIndex = ++zTop;
+    titleBar.setPointerCapture(e.pointerId);
+  });
+  titleBar.addEventListener('pointermove', e => {
+    if(!dragging) return;
+    el.style.left = Math.max(0, Math.min(innerWidth-el.offsetWidth, sl+(e.clientX-sx)))+'px';
+    el.style.top  = Math.max(34, Math.min(innerHeight-44-el.offsetHeight, st+(e.clientY-sy)))+'px';
+  });
+  titleBar.addEventListener('pointerup', e => {
+    dragging=false; titleBar.classList.remove('drag');
+    try{titleBar.releasePointerCapture(e.pointerId)}catch(err){}
+  });
+
+  el.querySelector('.cls').addEventListener('click', () => closeWindow(id));
+  el.querySelector('.min').addEventListener('click', () => toggleMinimize(id));
+  el.addEventListener('pointerdown', () => bringToFront(id));
+
+  const task = document.createElement('button');
+  task.className = 'task';
+  task.innerHTML = svgIcon(iconName, 11) + ' ' + title;
+  task.addEventListener('click', () => {
+    const w2 = windows.get(id); if(!w2) return;
+    if(w2.minimized) toggleMinimize(id);
+    else if(w2.el.style.zIndex == zTop) toggleMinimize(id);
+    else bringToFront(id);
+  });
+  tasksEl.appendChild(task);
+
+  const wObj = { el, body, task, minimized:false, id };
+  windows.set(id, wObj);
+  bringToFront(id);
+  return wObj;
+}
+function bringToFront(id){
+  const w = windows.get(id); if(!w) return;
+  w.el.style.zIndex = ++zTop;
+  w.el.style.display = '';
+  w.minimized = false;
+  w.task.classList.remove('minimized');
+  windows.forEach((ww,k)=>{
+    ww.task.classList.toggle('active', k===id && ww.el.style.zIndex == zTop);
+  });
+}
+function toggleMinimize(id){
+  const w = windows.get(id); if(!w) return;
+  w.minimized = !w.minimized;
+  w.el.style.display = w.minimized ? 'none' : '';
+  w.task.classList.toggle('minimized', w.minimized);
+}
+function closeWindow(id){
+  const w = windows.get(id); if(!w) return;
+  w.el.remove(); w.task.remove(); windows.delete(id);
+  if(w.stopRAF) w.stopRAF();
+  if(w.stopCam) w.stopCam();
+}
+
+/* ============ APPS ============ */
+const APPS = {};
+
+APPS.terminal = {
+  title:'Terminal', icon:'terminal',
+  build: body => {
+    const el = document.createElement('div');
+    el.className = 'app-term'; body.appendChild(el);
+    runTerminal(el);
+  }
+};
+async function runTerminal(el){
+  const script = [
+    ['$ nmap -sS -A 10.13.37.0/24','cmd'],
+    ['Starting Nmap 7.94','dim'],
+    ['PORT      STATE  SERVICE   VERSION','dim'],
+    ['22/tcp    open   ssh       OpenSSH 8.9p1','out'],
+    ['80/tcp    open   http      nginx 1.18.0','out'],
+    ['3306/tcp  open   mysql     MySQL 8.0.32','warn'],
+    ['$ hydra -l root -P rockyou.txt ssh://10.13.37.42','cmd'],
+    ['[DATA] trying "hunter2" ...... MATCH','ok'],
+    ['$ ssh root@10.13.37.42','cmd'],
+    ['[ OK ] shell obtained — uid=0(root)','ok'],
+    ['$ ./exfil.sh --target /var/db/secrets','cmd'],
+    ['[####] uploading 4.2 GB .............. 100%','ok'],
+    ['$ ./rootkit --install --stealth','cmd'],
+    ['[ OK ] persistence established','ok'],
+    ['>> ACCESS GRANTED — WELCOME, OPERATOR.','big']
+  ];
+  for(const [txt,cls] of script){
+    const d = document.createElement('div');
+    d.className = 'hl '+(cls||'');
+    el.appendChild(d);
+    for(let i=0;i<txt.length;i++){
+      d.textContent = txt.slice(0,i+1);
+      el.scrollTop = el.scrollHeight;
+      await sleep(4 + Math.random()*6);
+    }
+    await sleep(90 + Math.random()*120);
+  }
+}
+
+APPS.sysmon = {
+  title:'System Monitor', icon:'sysmon',
+  build: body => {
+    body.innerHTML = `
+      <div class="app-sys">
+        <div class="sysbar"><div class="lbl">CPU <span id="scpu">0%</span></div>
+          <div class="track"><div class="fill" id="fcpu" style="width:42%;background:linear-gradient(90deg,#00ff9c,#00d0ff)"></div></div></div>
+        <div class="sysbar"><div class="lbl">RAM <span id="sram">0%</span></div>
+          <div class="track"><div class="fill" id="fram" style="width:61%;background:linear-gradient(90deg,#00e5ff,#7dffd0)"></div></div></div>
+        <div class="sysbar"><div class="lbl">GPU <span id="sgpu">0%</span></div>
+          <div class="track"><div class="fill" id="fgpu" style="width:28%;background:linear-gradient(90deg,#ff2bd6,#ffb0f0)"></div></div></div>
+        <div class="sysbar"><div class="lbl">NET <span id="snet">0%</span></div>
+          <div class="track"><div class="fill" id="fnet" style="width:12%;background:linear-gradient(90deg,#ffd166,#ff8a3d)"></div></div></div>
+        <canvas id="sysCanvas" width="600" height="120"></canvas>
+      </div>`;
+    const cpu=$('scpu'),ram=$('sram'),gpu=$('sgpu'),net=$('snet');
+    const fcpu=$('fcpu'),fram=$('fram'),fgpu=$('fgpu'),fnet=$('fnet');
+    const cv=$('sysCanvas'),ctx=cv.getContext('2d');
+    const hist=[]; for(let i=0;i<60;i++) hist.push(30+Math.random()*40);
+    let raf, last=0, v={cpu:42,ram:61,gpu:28,net:12};
+    const cl=(v,a,b)=>Math.min(b,Math.max(a,v));
+    function loop(t){
+      raf = requestAnimationFrame(loop);
+      if(t-last<120) return; last=t;
+      v.cpu=cl(v.cpu+(Math.random()-.5)*10,5,98);
+      v.ram=cl(v.ram+(Math.random()-.5)*4,20,92);
+      v.gpu=cl(v.gpu+(Math.random()-.5)*12,3,99);
+      v.net=cl(v.net+(Math.random()-.5)*16,0,100);
+      cpu.textContent=v.cpu.toFixed(0)+'%'; fcpu.style.width=v.cpu+'%';
+      ram.textContent=v.ram.toFixed(0)+'%'; fram.style.width=v.ram+'%';
+      gpu.textContent=v.gpu.toFixed(0)+'%'; fgpu.style.width=v.gpu+'%';
+      net.textContent=v.net.toFixed(0)+'%'; fnet.style.width=v.net+'%';
+      hist.push(v.cpu); if(hist.length>60) hist.shift();
+      const w=cv.width, h=cv.height;
+      ctx.fillStyle='#020a08'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='rgba(0,255,156,.15)';
+      for(let i=0;i<=4;i++){ctx.beginPath();ctx.moveTo(0,i*h/4);ctx.lineTo(w,i*h/4);ctx.stroke();}
+      ctx.beginPath();
+      hist.forEach((val,i)=>{
+        const x=i/(hist.length-1)*w, y=h-(val/100)*h;
+        i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+      });
+      ctx.strokeStyle='#00ff9c'; ctx.lineWidth=2;
+      ctx.shadowColor='#00ff9c'; ctx.shadowBlur=8;
+      ctx.stroke(); ctx.shadowBlur=0;
+    }
+    raf = requestAnimationFrame(loop);
+    const wObj = windows.get('sysmon');
+    if(wObj) wObj.stopRAF = ()=>cancelAnimationFrame(raf);
+  }
+};
+
+APPS.radar = {
+  title:'Network Radar', icon:'radar',
+  build: body => {
+    body.innerHTML = `
+      <div class="app-radar">
+        <canvas id="radarCanvas" width="380" height="380"></canvas>
+        <div class="radar-info">
+          <span>NODES <b>9</b></span>
+          <span>SCANNING <b>10.13.37.0/24</b></span>
+          <span>LATENCY <b id="rLat">24ms</b></span>
+        </div>
+      </div>`;
+    const cv=$('radarCanvas'), ctx=cv.getContext('2d');
+    const blips = Array.from({length:9},(_,i)=>({
+      a:(i/9)*Math.PI*2+Math.random()*.6, r:.22+Math.random()*.72
+    }));
+    let raf, last=0, t=0;
+    function loop(now){
+      raf = requestAnimationFrame(loop);
+      if(now-last<30) return; last=now;
+      t += .05;
+      const w=cv.width, h=cv.height, cx=w/2, cy=h/2, R=Math.min(w,h)/2-20;
+      ctx.fillStyle='#01080a'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='rgba(0,255,156,.22)'; ctx.lineWidth=1;
+      for(let r=40;r<=R;r+=40){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();}
+      ctx.beginPath();ctx.moveTo(cx-R,cy);ctx.lineTo(cx+R,cy);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,cy-R);ctx.lineTo(cx,cy+R);ctx.stroke();
+      const a = t;
+      const grad = ctx.createRadialGradient(cx,cy,0,cx,cy,R);
+      grad.addColorStop(0,'rgba(0,255,156,.6)');
+      grad.addColorStop(1,'rgba(0,255,156,0)');
+      ctx.fillStyle=grad;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,a-.6,a);ctx.closePath();ctx.fill();
+      blips.forEach(b=>{
+        const diff = Math.abs(((a-b.a)+Math.PI*3)%(Math.PI*2)-Math.PI);
+        const inten = diff<.55?1-diff/.55:0;
+        const px = cx+Math.cos(b.a)*b.r*R, py = cy+Math.sin(b.a)*b.r*R;
+        if(inten>0){
+          ctx.fillStyle=`rgba(0,255,156,${inten})`;
+          ctx.beginPath();ctx.arc(px,py,3+inten*4,0,Math.PI*2);ctx.fill();
+        }
+        ctx.fillStyle='rgba(0,229,255,.4)';
+        ctx.beginPath();ctx.arc(px,py,1.8,0,Math.PI*2);ctx.fill();
+      });
+      $('rLat').textContent = (20+Math.random()*10).toFixed(0)+'ms';
+    }
+    raf = requestAnimationFrame(loop);
+    const wObj = windows.get('radar');
+    if(wObj) wObj.stopRAF = ()=>cancelAnimationFrame(raf);
+  }
+};
+
+APPS.code = {
+  title:'Code Editor', icon:'code',
+  build: body => {
+    const lines = [
+      ['# exploit.py — ROOM 404','dim2'],
+      ['import socket, os, sys','kw'],
+      ['from exploit import payload','kw'],
+      ['',''],
+      ['def pwn(target):','def'],
+      ['    sock = socket.socket()',''],
+      ['    sock.connect((target, 443))',''],
+      ['    sock.send(payload.BUFFER)',''],
+      ['    data = sock.recv(4096)',''],
+      ['    if b"root" in data:','kw'],
+      ['        print("[+] shell obtained")','str'],
+      ['        return True','kw'],
+      ['    return False','kw'],
+      ['',''],
+      ['if __name__ == "__main__":','def'],
+      ['    pwn("10.13.37.42")',''],
+      ['',''],
+      ['# TODO: wipe logs','dim2']
+    ];
+    body.innerHTML = '<div class="app-code"><pre id="codePre"></pre></div>';
+    const pre = $('codePre');
+    lines.forEach(([txt,cls],i)=>{
+      const ln = document.createElement('span');
+      ln.className = 'ln'; ln.textContent = String(i+1).padStart(2,'0');
+      const code = document.createElement('span');
+      code.className = cls||''; code.textContent = txt;
+      pre.appendChild(ln); pre.appendChild(code);
+      pre.appendChild(document.createTextNode('\n'));
+    });
+    const cur = document.createElement('span'); cur.className='cursor'; pre.appendChild(cur);
+  }
+};
+
+APPS.cipher = {
+  title:'Cipher Decryptor', icon:'cipher',
+  build: body => {
+    body.innerHTML = `
+      <div class="app-cipher">
+        <div id="cipherGrid"></div>
+        <div class="cipher-out" id="cipherOut"></div>
+        <div class="cipher-status">
+          <span>ALGO: <b style="color:#00ff9c">AES-256-GCM</b></span>
+          <span>KEY: <b id="ckey" style="color:#00e5ff">--</b></span>
+          <span>STATUS: <b id="cstat" style="color:#ffd166">decrypting...</b></span>
+        </div>
+      </div>`;
+    const grid = $('cipherGrid'), out = $('cipherOut');
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    const target = 'ACCESS GRANTED :: WELCOME OPERATOR :: ROOM 404 UNLOCKED';
+    let idx = 0, raf, last=0;
+    function loop(now){
+      raf = requestAnimationFrame(loop);
+      if(now-last<60) return; last=now;
+      let html = '';
+      for(let i=0;i<8;i++){
+        for(let j=0;j<26;j++) html += chars[Math.floor(Math.random()*chars.length)];
+        html += '<br>';
+      }
+      grid.innerHTML = html;
+      idx = Math.min(target.length, idx+.35);
+      const n = Math.floor(idx);
+      const rev = target.slice(0,n);
+      const rest = target.slice(n).replace(/./g,()=>chars[Math.floor(Math.random()*chars.length)]);
+      out.innerHTML = `<span style="color:#00ff9c">${rev}</span><span class="blind">${rest}</span>`;
+      $('ckey').textContent = Array.from({length:12},()=>HEXC[Math.floor(Math.random()*16)]).join('');
+      if(n>=target.length){
+        $('cstat').textContent = 'SUCCESS ✓'; $('cstat').style.color = '#00ff9c';
+        if(Math.random()<.01) idx = 0;
+      }
+    }
+    raf = requestAnimationFrame(loop);
+    const wObj = windows.get('cipher');
+    if(wObj) wObj.stopRAF = ()=>cancelAnimationFrame(raf);
+  }
+};
+
+APPS.webcam = {
+  title:'Webcam', icon:'webcam',
+  build: body => {
+    body.innerHTML = `
+      <div class="app-cam">
+        <video id="camVideo" autoplay playsinline muted></video>
+        <div class="cam-overlay"></div>
+        <div class="cam-info">● CAM_01 · 1920×1080</div>
+        <div class="cam-rec">REC</div>
+        <div class="cam-time" id="camTime">--:--:--</div>
+        <div class="cam-fallback" id="camFallback" style="display:none">
+          <div class="big">${svgIcon('webcam', 44)}</div>
+          <div>Webcam tidak tersedia atau ditolak.<br>Klik tombol di bawah untuk mencoba lagi.</div>
+          <button id="camRetry">REQUEST CAMERA</button>
+        </div>
+      </div>`;
+    const video = $('camVideo'), fallback = $('camFallback'), camTime = $('camTime');
+    let stream = null, intv = null;
+    function tickTime(){
+      const d = new Date();
+      camTime.textContent = '● ' + [d.getHours(),d.getMinutes(),d.getSeconds()]
+        .map(n=>String(n).padStart(2,'0')).join(':');
+    }
+    intv = setInterval(tickTime, 1000); tickTime();
+    async function startCam(){
+      try{
+        stream = await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}});
+        video.srcObject = stream;
+        video.style.display = 'block'; fallback.style.display = 'none';
+      }catch(err){
+        video.style.display = 'none'; fallback.style.display = 'flex';
+      }
+    }
+    $('camRetry').addEventListener('click', startCam);
+    startCam();
+    const wObj = windows.get('webcam');
+    if(wObj) wObj.stopCam = ()=>{
+      if(stream) stream.getTracks().forEach(t=>t.stop());
+      clearInterval(intv);
+    };
+  }
+};
+
+APPS.chat = {
+  title:'Chat', icon:'chat',
+  build: body => {
+    body.innerHTML = `
+      <div class="app-chat">
+        <div class="chat-msgs" id="chatMsgs"></div>
+        <div class="chat-input">
+          <input id="chatIn" placeholder="ketik pesan..." autocomplete="off">
+          <button id="chatSend">KIRIM</button>
+        </div>
+      </div>`;
+    const msgs = $('chatMsgs'), inp = $('chatIn'), sendBtn = $('chatSend');
+    function addMsg(who, text){
+      const d = document.createElement('div');
+      d.className = 'msg ' + (who === 'me' ? 'me' : 'them');
+      d.innerHTML = `<div class="who">${who === 'me' ? 'YOU' : 'GHOST_0x42'}</div>${text}`;
+      msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+    }
+    [{who:'ghost',text:'kamu udah di room 404?'},
+     {who:'me',text:'udah. ini OS-nya jalan.'},
+     {who:'ghost',text:'coba buka Hack Mod, target MLBB lagi gencar.'}].forEach(m=>addMsg(m.who,m.text));
+    async function autoReply(userText){
+      const typing = document.createElement('div');
+      typing.className = 'msg them typing';
+      typing.innerHTML = '<div class="who">GHOST_0x42</div>...</div>';
+      msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight;
+      await sleep(1200+Math.random()*800); typing.remove();
+      const low = userText.toLowerCase();
+      let reply;
+      if(low.includes('hack')||low.includes('mlbb')||low.includes('cheat'))
+        reply = 'buka app Hack Mod → aktifin Auto Aim + Anti-Ban → inject. nanti langsung launch MLBB.';
+      else if(low.includes('halo')||low.includes('hai')||low.includes('hi'))
+        reply = 'halo operator. siap misi hari ini?';
+      else if(low.includes('aman')||low.includes('safe'))
+        reply = 'anti-ban udah aktif, tenang aja.';
+      else { const r = ['oke noted.','gaskeun.','mantap.','siap bos.']; reply = r[Math.floor(Math.random()*r.length)]; }
+      addMsg('ghost', reply);
+    }
+    function send(){
+      const t = inp.value.trim(); if(!t) return;
+      inp.value = ''; addMsg('me', t); autoReply(t);
+    }
+    sendBtn.addEventListener('click', send);
+    inp.addEventListener('keydown', e => { if(e.key === 'Enter') send(); });
+  }
+};
+
+APPS.music = {
+  title:'Music Player', icon:'music',
+  build: body => {
+    body.innerHTML = `
+      <div class="app-music">
+        <div class="mus-hero">
+          <div class="mus-cover"><div class="mus-cover-inner">${svgIcon('music', 32)}</div></div>
+          <div class="mus-meta">
+            <div class="mus-title" id="musTitle">Neon Dreams</div>
+            <div class="mus-artist" id="musArtist">SYNTHWAVE // 404</div>
+            <div class="mus-time"><span id="musCur">0:00</span><span style="color:#3f7a68">/</span><span id="musDur">3:42</span></div>
+          </div>
+        </div>
+        <canvas id="musViz" width="400" height="70"></canvas>
+        <div class="mus-progress"><div class="mus-progress-fill" id="musProgFill"></div></div>
+        <div class="mus-controls">
+          <button id="musPrev">${svgIcon('prev', 16)}</button>
+          <button id="musPlay" class="play">${svgIcon('play', 20)}</button>
+          <button id="musNext">${svgIcon('next', 16)}</button>
+        </div>
+        <div class="mus-list" id="musList"></div>
+      </div>`;
+    const tracks = [
+      {t:'Neon Dreams', a:'SYNTHWAVE // 404', d:222},
+      {t:'Dark Protocol', a:'GHOST_0x42', d:195},
+      {t:'Midnight Grid', a:'NULLSEC', d:248},
+      {t:'Cipher Pulse', a:'ENCRYPTED', d:186},
+      {t:'Room 404 (Outro)', a:'NULLSEC', d:154}
+    ];
+    let cur = 0, playing = true, elapsed = 0;
+    const viz = $('musViz'), vctx = viz.getContext('2d');
+    const playBtn = $('musPlay');
+    const fmt = s => Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+    function loadTrack(i){
+      cur = (i+tracks.length)%tracks.length;
+      elapsed = 0;
+      $('musTitle').textContent = tracks[cur].t;
+      $('musArtist').textContent = tracks[cur].a;
+      $('musDur').textContent = fmt(tracks[cur].d);
+      document.querySelectorAll('.mus-item').forEach((el,j)=>el.classList.toggle('active', j===cur));
+    }
+    tracks.forEach((tr,i)=>{
+      const d = document.createElement('div');
+      d.className = 'mus-item' + (i===cur?' active':'');
+      d.innerHTML = `<span class="num">${i+1}</span><span class="title">${tr.t}</span><span class="dur">${fmt(tr.d)}</span>`;
+      d.addEventListener('click', ()=>{ loadTrack(i); playing = true; updatePlayBtn(); });
+      $('musList').appendChild(d);
+    });
+    function updatePlayBtn(){
+      playBtn.innerHTML = playing ? svgIcon('pause', 20) : svgIcon('play', 20);
+    }
+    playBtn.addEventListener('click', ()=>{ playing = !playing; updatePlayBtn(); });
+    $('musPrev').addEventListener('click', ()=>loadTrack(cur-1));
+    $('musNext').addEventListener('click', ()=>loadTrack(cur+1));
+
+    let raf, lastT = performance.now(), barPhase = 0;
+    function loop(now){
+      raf = requestAnimationFrame(loop);
+      const dt = (now-lastT)/1000; lastT = now;
+      if(playing){
+        elapsed += dt;
+        if(elapsed >= tracks[cur].d){ loadTrack(cur+1); }
+      }
+      $('musCur').textContent = fmt(elapsed);
+      $('musProgFill').style.width = (elapsed/tracks[cur].d*100)+'%';
+      const W=viz.width, H=viz.height;
+      vctx.fillStyle='#020a08'; vctx.fillRect(0,0,W,H);
+      barPhase += playing ? .15 : .02;
+      const bars = 40;
+      const bw = W/bars;
+      for(let i=0;i<bars;i++){
+        const h = playing
+          ? Math.abs(Math.sin(barPhase+i*.4)) * (H*.7) + Math.random()*H*.2
+          : H*.05;
+        const grad = vctx.createLinearGradient(0, H-h, 0, H);
+        grad.addColorStop(0, '#00ff9c'); grad.addColorStop(1, '#00e5ff');
+        vctx.fillStyle = grad;
+        vctx.fillRect(i*bw+1, H-h, bw-2, h);
+      }
+    }
+    raf = requestAnimationFrame(loop);
+    const wObj = windows.get('music');
+    if(wObj) wObj.stopRAF = ()=>cancelAnimationFrame(raf);
+  }
+};
+
+APPS.files = {
+  title:'File Explorer', icon:'files',
+  build: body => {
+    body.innerHTML = `<div class="app-files">
+      <div class="files-side" id="filesSide"></div>
+      <div class="files-main">
+        <div class="files-path" id="filesPath">/home/operator</div>
+        <div class="files-grid" id="filesGrid"></div>
+      </div>
+    </div>`;
+    const fs = {
+      '/home/operator':[
+        {n:'Documents', t:'folder'},{n:'Pictures', t:'folder'},{n:'Downloads', t:'folder'},
+        {n:'exploit.py', t:'file'},{n:'notes.txt', t:'file'},{n:'wallet.dat', t:'file'}
+      ],
+      '/home/operator/Documents':[
+        {n:'passwords.txt', t:'file'},{n:'keys.pem', t:'file'},{n:'backup.zip', t:'file'}
+      ],
+      '/home/operator/Pictures':[
+        {n:'room_404.png', t:'image'},{n:'evidence.jpg', t:'image'},{n:'screenshot_04.png', t:'image'}
+      ],
+      '/home/operator/Downloads':[
+        {n:'rootkit.tar.gz', t:'file'},{n:'mlbb_mod.apk', t:'file'},{n:'hydra.bin', t:'file'}
+      ],
+      '/root':[
+        {n:'.ssh', t:'folder'},{n:'.config', t:'folder'},{n:'secrets.kdbx', t:'file'}
+      ],
+      '/system':[
+        {n:'kernel.sys', t:'file'},{n:'drivers', t:'folder'},{n:'logs', t:'folder'}
+      ]
+    };
+    let curPath = '/home/operator';
+    const sidebar = [
+      {p:'/home/operator', n:'Home', ic:'folder'},
+      {p:'/root', n:'Root', ic:'folder'},
+      {p:'/system', n:'System', ic:'folder'},
+      {p:'/home/operator/Downloads', n:'Downloads', ic:'folder'}
+    ];
+    function buildSide(){
+      $('filesSide').innerHTML = sidebar.map(s => 
+        `<div class="files-side-item ${s.p===curPath?'active':''}" data-p="${s.p}">
+          ${svgIcon(s.ic, 14)} ${s.n}
+        </div>`).join('');
+      document.querySelectorAll('.files-side-item').forEach(el => {
+        el.addEventListener('click', () => { curPath = el.dataset.p; render(); });
+      });
+    }
+    function render(){
+      $('filesPath').textContent = curPath;
+      const items = fs[curPath] || [];
+      $('filesGrid').innerHTML = items.map(it => {
+        const ic = it.t === 'folder' ? 'folder' : it.t === 'image' ? 'image' : 'file';
+        return `<div class="files-item" data-n="${it.n}" data-t="${it.t}">
+          <div class="f-ic">${svgIcon(ic, 22)}</div>
+          <div class="f-nm">${it.n}</div>
+        </div>`;
+      }).join('');
+      document.querySelectorAll('.files-item').forEach(el => {
+        el.addEventListener('dblclick', () => {
+          if(el.dataset.t === 'folder'){
+            const np = curPath + '/' + el.dataset.n;
+            if(fs[np]){ curPath = np; render(); }
+            else { fs[np] = []; curPath = np; render(); }
+          } else {
+            toast('Membuka ' + el.dataset.n);
+          }
+        });
+        el.addEventListener('click', () => toast('Selected: ' + el.dataset.n));
+      });
+      buildSide();
+    }
+    render();
+  }
+};
+
+APPS.settings = {
+  title:'Settings', icon:'settings',
+  build: body => {
+    body.innerHTML = `
+      <div class="app-settings">
+        <div class="set-group">
+          <h4>Tampilan</h4>
+          <div class="set-row">
+            <div class="lab">${svgIcon('star', 16)} Aksen Warna</div>
+            <input type="color" id="setAccent" value="#00ff9c">
+          </div>
+          <div class="set-row">
+            <div class="lab">${svgIcon('eye', 16)} Mode Gelap Penuh</div>
+            <label class="sw2"><input type="checkbox" id="setDark" checked><span></span></label>
+          </div>
+          <div class="set-row">
+            <div class="lab">${svgIcon('terminal', 16)} Efek Scanline</div>
+            <label class="sw2"><input type="checkbox" id="setScan" checked><span></span></label>
+          </div>
+        </div>
+        <div class="set-group">
+          <h4>Sistem</h4>
+          <div class="set-row">
+            <div class="lab">${svgIcon('speed', 16)} Performa Tinggi</div>
+            <label class="sw2"><input type="checkbox" id="setPerf"><span></span></label>
+          </div>
+          <div class="set-row">
+            <div class="lab">${svgIcon('shield', 16)} Auto-Update</div>
+            <label class="sw2"><input type="checkbox" id="setUpdate" checked><span></span></label>
+          </div>
+          <div class="set-row">
+            <div class="lab">${svgIcon('chat', 16)} Notifikasi</div>
+            <label class="sw2"><input type="checkbox" id="setNotif" checked><span></span></label>
+          </div>
+        </div>
+        <div class="set-group">
+          <h4>Akun</h4>
+          <div class="set-row">
+            <div class="lab">${svgIcon('shield', 16)} Operator: NULLSEC_0x42</div>
+          </div>
+          <div class="set-row">
+            <div class="lab">${svgIcon('star', 16)} Clearance: ROOT</div>
+          </div>
+        </div>
+      </div>`;
+    $('setAccent').addEventListener('input', e => {
+      document.documentElement.style.setProperty('--grn', e.target.value);
+      toast('Warna aksen diubah');
+    });
+    ['setDark','setScan','setPerf','setUpdate','setNotif'].forEach(id => {
+      const el = $(id); if(!el) return;
+      el.addEventListener('change', () => toast(el.checked ? 'Aktif' : 'Nonaktif'));
+    });
+  }
+};
+
+/* ============ HACK MOD (FIXED LAUNCH) ============ */
+let mlbbUnlocked = false;
+APPS.hackmod = {
+  title:'MLBB Hack Mod v3.7', icon:'hackmod',
+  build: body => {
+    body.innerHTML = `
+      <div class="app-hack">
+        <div class="hm-header">
+          <div class="tt">MLBB HACK MOD v3.7</div>
+          <div class="sub">MOBILE LEGENDS: BANG BANG — INJECTOR SUITE</div>
+          <div class="hm-target">
+            <span class="badge">TARGET</span> <span>com.mobile.legends</span>
+            <span class="badge">DEVICE</span> <span id="hmDevice">detecting...</span>
+          </div>
+          <div class="hm-target" style="margin-top:4px">
+            <span style="font-size:9.5px;color:#7dffd0">
+              ⓘ Klik LAUNCH secara manual (bukan auto) — browser wajibkan user gesture untuk buka app lain
+            </span>
+          </div>
+        </div>
+        <div class="hm-body" id="hmBody">
+          <div class="cheat" data-k="aim"><span class="nm"><span class="ci">${svgIcon('aim', 16)}</span>Auto Aim (Aimbot)</span><span class="tg"></span></div>
+          <div class="cheat" data-k="drone"><span class="nm"><span class="ci">${svgIcon('drone', 16)}</span>Drone View (Wallhack)</span><span class="tg"></span></div>
+          <div class="cheat" data-k="speed"><span class="nm"><span class="ci">${svgIcon('speed', 16)}</span>Speed Hack</span><span class="tg"></span></div>
+          <div class="cheat" data-k="cd"><span class="nm"><span class="ci">${svgIcon('clock', 16)}</span>Cooldown Remover</span><span class="tg"></span></div>
+          <div class="cheat" data-k="diamond"><span class="nm"><span class="ci">${svgIcon('diamond', 16)}</span>Unlimited Diamonds</span><span class="tg"></span></div>
+          <div class="cheat" data-k="skin"><span class="nm"><span class="ci">${svgIcon('star', 16)}</span>All Skins Unlocked</span><span class="tg"></span></div>
+          <div class="cheat" data-k="map"><span class="nm"><span class="ci">${svgIcon('map', 16)}</span>Map Hack</span><span class="tg"></span></div>
+          <div class="cheat" data-k="antiban"><span class="nm"><span class="ci">${svgIcon('shield', 16)}</span>Anti-Ban</span><span class="tg"></span></div>
+          <div class="hm-status" id="hmStatus">› Pilih cheat lalu klik INJECT</div>
+        </div>
+        <div class="hm-footer">
+          <div class="prog"><div class="fill" id="hmProg"></div></div>
+          <button class="hm-btn inject" id="btnInject">INJECT CHEAT</button>
+          <button class="hm-btn launch" id="btnLaunch">LAUNCH MLBB →</button>
+        </div>
+      </div>`;
+    const cheats = body.querySelectorAll('.cheat');
+    cheats.forEach(c => {
+      if(c.dataset.k === 'antiban') c.classList.add('on');
+      c.addEventListener('click', () => {
+        c.classList.toggle('on'); updateHmStatus();
+      });
+    });
+    function updateHmStatus(){
+      const on = [...cheats].filter(c=>c.classList.contains('on')).length;
+      $('hmStatus').textContent = `› ${on} cheat aktif — siap inject`;
+    }
+    updateHmStatus();
+
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    $('hmDevice').textContent = isAndroid ? 'Android (detected)' : 'Browser (fallback mode)';
+
+    $('btnInject').addEventListener('click', runInject);
+    $('btnLaunch').addEventListener('click', launchMLBB);
+
+    async function runInject(){
+      const btn = $('btnInject'), prog = $('hmProg'), stat = $('hmStatus');
+      btn.disabled = true;
+      const steps = [
+        ['Attaching to com.mobile.legends...', 8],
+        ['Reading process memory (pid 4192)...', 18],
+        ['Locating base address 0x7FF4A000...', 30],
+        ['Loading libhack.so into memory...', 44],
+        ['Hooking libil2cpp.so functions...', 58],
+        ['Patching signature (anti-cheat)...', 70],
+        ['Injecting cheat payload...', 82],
+        ['Verifying injection integrity...', 92],
+        ['INJECTION SUCCESSFUL — ready to launch', 100]
+      ];
+      for(const [msg,pct] of steps){
+        stat.textContent = '› ' + msg;
+        stat.style.color = pct === 100 ? '#00ff9c' : '#7dffd0';
+        prog.style.width = pct+'%';
+        await sleep(400 + Math.random()*350);
+      }
+      toast('Cheat berhasil di-inject! Klik LAUNCH MLBB untuk buka game');
+      btn.textContent = 'INJECT AGAIN'; btn.disabled = false;
+      $('btnLaunch').classList.add('show');
+      $('btnLaunch').textContent = 'LAUNCH MLBB →';
+      mlbbUnlocked = true;
+      /* buildDesktopIcons() to update lock state */
+      if(typeof buildDesktopIcons === 'function') buildDesktopIcons();
+      // JANGAN auto-launch — harus manual agar user gesture valid
+    }
+  }
+};
+
+/* ============ MLBB LAUNCH (FIXED) ============ */
+function launchMLBB(){
+  const ua = navigator.userAgent;
+  const isAndroid = /Android/i.test(ua);
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  
+  if(!isAndroid){
+    toast(isIOS ? 'iOS tidak support intent Android — menjalankan simulasi' : 'Desktop mode — menjalankan simulasi MLBB');
+    launchMiniGame();
+    return;
+  }
+  
+  toast('Membuka com.mobile.legends...');
+  
+  // Deteksi app benar-benar terbuka (page hidden / blur)
+  let launched = false;
+  const onVis = () => { if(document.hidden) launched = true; };
+  const onBlur = () => { launched = true; };
+  document.addEventListener('visibilitychange', onVis);
+  window.addEventListener('blur', onBlur);
+  
+  // Intent lengkap + fallback URL eksplisit (bukan Play Store)
+  const intentUrl = 
+    'intent:#Intent;' +
+    'package=com.mobile.legends;' +
+    'action=android.intent.action.MAIN;' +
+    'category=android.intent.category.LAUNCHER;' +
+    'launchFlags=0x10000000;' +
+    'S.browser_fallback_url=' + encodeURIComponent('https://www.mobilelegends.com/') +
+    ';end';
+  
+  // PENTING: fire SYNCHRONOUS dari click handler
+  try {
+    window.location.href = intentUrl;
+  } catch(e){
+    console.error('Intent error:', e);
+  }
+  
+  // Fallback: kalau 2 detik app belum buka, jalankan mini game
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', onVis);
+    window.removeEventListener('blur', onBlur);
+    if(!launched && !document.hidden){
+      toast('App tidak terdeteksi — menjalankan simulasi');
+      launchMiniGame();
+    }
+  }, 2000);
+}
+
+/* Mini MLBB game */
+function launchMiniGame(){
+  if(windows.has('mlbb')){ bringToFront('mlbb'); return; }
+  const w = createWindow('mlbb', 'Mobile Legends: Bang Bang', 'mlbb', body => {
+    body.innerHTML = `
+      <div class="app-mlbb">
+        <div class="mlbb-load" id="mlbbLoad">
+          <div class="mlbb-logo">MOBILE<br>LEGENDS<br>BANG BANG</div>
+          <div class="bar"><div class="fill" id="mlbbLoadFill"></div></div>
+          <div class="tip" id="mlbbTip">Initializing hero data...</div>
+        </div>
+        <div class="mlbb-hud">
+          <span class="sc">KILLS <b id="mlKill">0</b> / 15</span>
+          <span class="tm" id="mlTimer">00:00</span>
+          <span class="sp"></span>
+          <span class="kb">CHEATS: ON</span>
+        </div>
+        <canvas id="mlbbCanvas"></canvas>
+        <div class="mlbb-foot">
+          <div class="ability" id="mlAtk">${svgIcon('sword', 20)}</div>
+          <div class="ability" id="mlSkill" style="background:radial-gradient(circle at 30% 30%,#ff2bd6,#5a0a45);border-color:#ff2bd6;color:#ff2bd6">${svgIcon('star', 20)}</div>
+          <div class="stats">
+            <div class="hp"><div id="mlHp" style="width:100%"></div></div>
+            <div class="mp"><div id="mlMp" style="width:100%"></div></div>
+          </div>
+          <button class="exit" id="mlExit">KELUAR</button>
+        </div>
+        <div class="mlbb-victory" id="mlVictory">
+          <div class="big">VICTORY</div>
+          <div class="st">YOU ARE THE LEGEND</div>
+          <div class="mvp">MVP · SAVAGE · 15 KILLS</div>
+          <button id="mlAgain">MAIN LAGI</button>
+        </div>
+      </div>`;
+    runMLBBLoading();
+  });
+}
+
+async function runMLBBLoading(){
+  const fill = $('mlbbLoadFill'), tip = $('mlbbTip');
+  const tips = ['Initializing hero data...','Loading battle arena...','Connecting to server...','Syncing skins...','Entering match...'];
+  for(let i=0;i<tips.length;i++){
+    tip.textContent = tips[i];
+    fill.style.width = ((i+1)/tips.length*100)+'%';
+    await sleep(450);
+  }
+  await sleep(300);
+  $('mlbbLoad').classList.add('gone');
+  startMLBBGame();
+}
+
+function startMLBBGame(){
+  const cv = $('mlbbCanvas'), container = cv.parentElement;
+  const W = container.clientWidth || 640, H = container.clientHeight || 320;
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const game = {
+    W, H, ctx,
+    player: {x:W/2, y:H/2, hp:100, mp:100},
+    enemies: [], projectiles: [], particles: [],
+    kills: 0, time: 0, lastShot: 0, running: true,
+    aimbot: true, esp: true
+  };
+  function spawn(){
+    game.enemies = [];
+    for(let i=0;i<5;i++){
+      const a = Math.random()*Math.PI*2, r = Math.min(W,H)*.35;
+      game.enemies.push({
+        x:W/2+Math.cos(a)*r, y:H/2+Math.sin(a)*r,
+        vx:(Math.random()-.5)*80, vy:(Math.random()-.5)*80,
+        hp:100, alive:true,
+        hero:['Layla','Zilong','Miya','Alucard','Gusion','Fanny','Lesley'][Math.floor(Math.random()*7)]
+      });
+    }
+  }
+  spawn();
+  let raf = null, last = performance.now();
+  function tick(){
+    if(!game.running) return;
+    const now = performance.now(), dt = Math.min(.05, (now-last)/1000);
+    last = now; game.time += dt;
+
+    game.enemies.forEach(e => {
+      if(!e.alive) return;
+      e.x += e.vx*dt; e.y += e.vy*dt;
+      if(e.x<24||e.x>W-24) e.vx *= -1;
+      if(e.y<24||e.y>H-24) e.vy *= -1;
+      e.x += (game.player.x - e.x)*dt*.15;
+      e.y += (game.player.y - e.y)*dt*.15;
+    });
+
+    if(game.aimbot && game.time-game.lastShot>.45){
+      const t = game.enemies.filter(e=>e.alive).sort((a,b)=>
+        Math.hypot(a.x-game.player.x,a.y-game.player.y) - Math.hypot(b.x-game.player.x,b.y-game.player.y))[0];
+      if(t){
+        game.lastShot = game.time;
+        const dx=t.x-game.player.x, dy=t.y-game.player.y;
+        const d = Math.hypot(dx,dy)||1;
+        game.projectiles.push({x:game.player.x,y:game.player.y,vx:dx/d*520,vy:dy/d*520,life:1});
+      }
+    }
+    game.projectiles = game.projectiles.filter(p => {
+      p.x += p.vx*dt; p.y += p.vy*dt; p.life -= dt;
+      for(const e of game.enemies){
+        if(!e.alive) continue;
+        if(Math.hypot(e.x-p.x,e.y-p.y)<16){
+          e.hp -= 45;
+          if(e.hp<=0){
+            e.alive=false; game.kills++;
+            for(let i=0;i<10;i++) game.particles.push({
+              x:e.x, y:e.y, vx:(Math.random()-.5)*200, vy:(Math.random()-.5)*200, life:.6
+            });
+          }
+          return false;
+        }
+      }
+      return p.life>0 && p.x>-20 && p.x<W+20 && p.y>-20 && p.y<H+20;
+    });
+    game.particles = game.particles.filter(p => {
+      p.life -= dt; p.x += p.vx*dt; p.y += p.vy*dt;
+      return p.life > 0;
+    });
+    if(game.enemies.filter(e=>e.alive).length<2 && !game._respawning){
+      game._respawning = true;
+      setTimeout(()=>{spawn(); game._respawning=false;},1500);
+    }
+    if(game.kills>=15 && !game._victory){
+      game._victory = true;
+      $('mlVictory').classList.add('show');
+    }
+    $('mlKill').textContent = game.kills;
+    const mm = Math.floor(game.time/60), ss = Math.floor(game.time%60);
+    $('mlTimer').textContent = String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+
+    ctx.fillStyle = '#0a1020'; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle = 'rgba(0,229,255,.08)';
+    for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    ctx.strokeStyle = 'rgba(255,209,102,.2)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(W/2,H/2,60,0,Math.PI*2); ctx.stroke();
+
+    if(game.esp){
+      game.enemies.forEach(e => {
+        if(!e.alive) return;
+        ctx.strokeStyle = 'rgba(255,43,214,.85)'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(e.x-14, e.y-14, 28, 28);
+        ctx.fillStyle = 'rgba(255,43,214,.9)';
+        ctx.font = '9px monospace'; ctx.textAlign = 'center';
+        ctx.fillText(e.hero, e.x, e.y-20);
+        ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(e.x-14, e.y+16, 28, 3);
+        ctx.fillStyle = '#00ff9c'; ctx.fillRect(e.x-14, e.y+16, 28*(e.hp/100), 3);
+      });
+    }
+    if(game.aimbot){
+      const t = game.enemies.filter(e=>e.alive).sort((a,b)=>
+        Math.hypot(a.x-game.player.x,a.y-game.player.y) - Math.hypot(b.x-game.player.x,b.y-game.player.y))[0];
+      if(t){
+        ctx.strokeStyle = 'rgba(0,255,156,.5)'; ctx.lineWidth = 1;
+        ctx.setLineDash([4,4]);
+        ctx.beginPath(); ctx.moveTo(game.player.x, game.player.y); ctx.lineTo(t.x, t.y); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle = 'rgba(255,209,102,.9)';
+        ctx.beginPath(); ctx.arc(t.x, t.y, 18, 0, Math.PI*2); ctx.stroke();
+      }
+    }
+    game.projectiles.forEach(p => {
+      ctx.fillStyle = '#ffd166'; ctx.shadowColor = '#ffd166'; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill(); ctx.shadowBlur = 0;
+    });
+    game.particles.forEach(p => {
+      ctx.fillStyle = `rgba(255,43,214,${p.life/.6})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.fillStyle = '#00e5ff'; ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 16;
+    ctx.beginPath(); ctx.arc(game.player.x, game.player.y, 10, 0, Math.PI*2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('YOU', game.player.x, game.player.y+3);
+
+    raf = requestAnimationFrame(tick);
+  }
+  raf = requestAnimationFrame(tick);
+
+  $('mlExit').addEventListener('click', () => {
+    game.running = false; cancelAnimationFrame(raf);
+    $('mlVictory').classList.remove('show');
+    closeWindow('mlbb');
+    toast('Keluar dari MLBB');
+  });
+  $('mlAgain').addEventListener('click', () => {
+    $('mlVictory').classList.remove('show');
+    game.kills = 0; game.enemies = []; game.projectiles = []; game._victory = false;
+    spawn();
+  });
+}
+
+/* ============ DESKTOP ICONS ============ */
+const ICONS = [
+  {id:'terminal', app:'terminal'},
+  {id:'sysmon', app:'sysmon'},
+  {id:'radar', app:'radar'},
+  {id:'code', app:'code'},
+  {id:'cipher', app:'cipher'},
+  {id:'webcam', app:'webcam'},
+  {id:'chat', app:'chat'},
+  {id:'music', app:'music'},
+  {id:'files', app:'files'},
+  {id:'settings', app:'settings'},
+  {id:'hackmod', app:'hackmod'},
+  {id:'mlbb', app:'mlbb', locked:true}
+];
+function buildDesktopIcons(){
+  const wrap = $('icons');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  ICONS.forEach(ic => {
+    const app = APPS[ic.app];
+    if(!app) return;
+    const d = document.createElement('div');
+    d.className = 'dicon' + (ic.locked && !mlbbUnlocked ? ' locked' : '');
+    if(ic.locked && mlbbUnlocked) d.classList.add('glow');
+    d.innerHTML = `<span class="ic-svg">${svgIcon(app.icon, 34)}</span><span class="nm">${app.title}</span>`;
+    d.addEventListener('click', () => {
+      if(ic.locked && !mlbbUnlocked){ toast('Hack dulu lewat MLBB Hack Mod'); return; }
+      if(ic.app === 'mlbb'){ launchMiniGame(); return; }
+      createWindow(ic.app, app.title, app.icon, app.build);
+    });
+    wrap.appendChild(d);
+  });
+}
+
+/* ============ OS OPEN/CLOSE ============ */
+function openOS(){
+  if(osOpen) return;
+  osOpen = true;
+  $('os').classList.add('on');
+  buildDesktopIcons();
+  updateOSClock();
+  if(window._osClockInt) clearInterval(window._osClockInt);
+  window._osClockInt = setInterval(updateOSClock, 1000);
+  if(window._osStatInt) clearInterval(window._osStatInt);
+  window._osStatInt = setInterval(() => {
+    $('statCpu').textContent = Math.floor(20+Math.random()*70);
+    $('statRam').textContent = Math.floor(40+Math.random()*50);
+    $('statNet').textContent = Math.floor(5+Math.random()*80);
+  }, 1200);
+}
+function updateOSClock(){
+  const d = new Date();
+  const hhmmss = [d.getHours(),d.getMinutes(),d.getSeconds()]
+    .map(n=>String(n).padStart(2,'0')).join(':');
+  $('osClock').textContent = hhmmss;
+  $('tbClock').textContent = hhmmss.slice(0,5);
+}
+async function closeOS(){
+  if(!osOpen) return;
+  osOpen = false;
+  [...windows.keys()].forEach(id => closeWindow(id));
+  $('os').classList.remove('on');
+  if(window._osClockInt){ clearInterval(window._osClockInt); window._osClockInt = null; }
+  if(window._osStatInt){ clearInterval(window._osStatInt); window._osStatInt = null; }
+  await camTo(DEF_POS, DEF_TGT, 1.35);
+  await leavePC();
+  toast('Koneksi diputus');
+}
+
+$('btnPower').addEventListener('click', closeOS);
+$('btnStart').addEventListener('click', () => toast('Buka app dari desktop'));
+
+/* ============ CLOCK ============ */
+function updateClockHands(){
+  const d = new Date();
+  const s = d.getSeconds()/60*Math.PI*2;
+  const m = (d.getMinutes()+d.getSeconds()/60)/60*Math.PI*2;
+  const h = ((d.getHours()%12)+d.getMinutes()/60)/12*Math.PI*2;
+  if(clockSec) clockSec.rotation.z = -s;
+  if(clockMin) clockMin.rotation.z = -m;
+  if(clockHour) clockHour.rotation.z = -h;
+}
+
+/* ============ BOOT ============ */
+async function runBoot(){
+  const logEl = $('bootLog'), fill = $('bootFill'), pctEl = $('bootPct');
+  const lines = [
+    '[ BIOS  ] Secure boot verified ................ OK',
+    '[ INIT  ] Mounting /dev/ram0 ................. OK',
+    '[ NET   ] Bringing up eth0 ................... OK',
+    '[ CRYPTO] Loading cipher modules ............. OK',
+    '[ AI    ] Injecting operator consciousness ... OK',
+    '[ ROOM  ] Spawning room_404 .................. OK'
+  ];
+  let p = 0;
+  for(let i=0;i<lines.length;i++){
+    const d = document.createElement('div');
+    d.className = 'bl'; d.textContent = lines[i];
+    logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight;
+    const target = Math.round(((i+1)/lines.length)*100);
+    await new Promise(resolve => {
+      const start = p, t0 = performance.now(), dur = 430;
+      const step = () => {
+        const k = Math.min(1, (performance.now()-t0)/dur);
+        p = start + (target-start)*easeOutCubic(k);
+        fill.style.width = p+'%';
+        pctEl.textContent = Math.round(p)+'%';
+        if(k<1) requestAnimationFrame(step); else resolve();
+      };
+      step();
+    });
+    await sleep(110);
+  }
+  await sleep(320);
+  const done = document.createElement('div');
+  done.className = 'bl ok'; done.textContent = '> ACCESS GRANTED. Entering room...';
+  logEl.appendChild(done); logEl.scrollTop = logEl.scrollHeight;
+  await sleep(780);
+  $('boot').classList.add('gone');
+  setTimeout(()=>{const b=$('boot');if(b)b.remove()},1000);
+  camera.position.set(11,10,13);
+  controls.target.set(0,.4,0); controls.update();
+  camTo(DEF_POS, DEF_TGT, 2.6, easeInOutCubic).then(() => {
+    controls.enabled = true;
+    toast('Klik objek untuk berinteraksi');
+  });
+}
+
+/* ============ RESET / SHOT ============ */
+async function resetAll(){
+  if(osOpen) await closeOS();
+  tweens.length = 0;
+  busy = false; charState = 'idle'; typing = false; walking = false;
+  tilt.rotation.x = 0; tilt.position.y = 0;
+  character.position.set(0.2,0,1.0);
+  character.rotation.y = Math.PI*.9;
+  hipsY.cur = hipsY.tgt = .94;
+  setPose('idle');
+  doorPivot.rotation.y = 0;
+  plant.scale.setScalar(1); plantScale = 1;
+  lampOn = true; lampLight.intensity = 1.8; lampShadeMat.emissiveIntensity = 1.6;
+  hemi.intensity = 1.05; cyanFill.intensity = 2.4; ceilLight.intensity = 1.5;
+  camLocked = false; controls.enabled = true;
+  camera.position.copy(DEF_POS); controls.target.copy(DEF_TGT); controls.update();
+  mlbbUnlocked = false;
+  toast('Room di-reset');
+}
+function screenshot(){
+  try{
+    composer.render();
+    const url = renderer.domElement.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.download = 'nullsec-room404-'+Date.now()+'.png';
+    a.href = url; a.click();
+    toast('Screenshot tersimpan');
+  }catch(e){ toast('Gagal screenshot') }
+}
+$('btnReset').addEventListener('click', resetAll);
+$('btnShot').addEventListener('click', screenshot);
+
+/* ============ ANIMATE ============ */
+const clock = new THREE.Clock();
+let elapsed = 0, lastScreen = 0, lastClock = 0;
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), .05);
+  elapsed += dt;
+  updateTweens(dt);
+  updateCharacter(dt, elapsed);
+  if(!camLocked) controls.update();
+  if(elapsed-lastScreen > .16){ lastScreen = elapsed; drawScreenTex(); }
+  if(elapsed-lastClock > .5){ lastClock = elapsed; updateClockHands(); }
+  composer.render();
+}
+
+/* ============ RESIZE ============ */
+function onResize(){
+  const w = innerWidth, h = innerHeight;
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w,h);
+  composer.setSize(w,h);
+  bloom.setSize(w,h);
+}
+window.addEventListener('resize', onResize);
+window.addEventListener('orientationchange', ()=>setTimeout(onResize, 220));
+
+/* ============ START ============ */
+animate();
+runBoot();
+</script>
+</body>
+</html>
